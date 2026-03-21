@@ -30,7 +30,7 @@ export default function Sidebar() {
         <div className="leading-tight">
           <div className="sr-only">JUDGE_PORTAL</div>
           <div className="text-[11px] text-black/55 font-oxanium tracking-widest">
-            BAF JUDGING
+            STELLAR ARENA
           </div>
         </div>
       </div>

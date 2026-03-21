@@ -48,7 +48,7 @@ export default function LeaderboardView({
               className="inline-block align-middle"
             />
             <span className="text-black/35 ml-2 text-[11px] tracking-wider">
-              BAF JUDGING
+              STELLAR ARENA
             </span>
           </div>
           <h1 className="mt-2 text-[36px] font-oxanium tracking-wide font-semibold text-black">
