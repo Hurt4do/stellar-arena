@@ -1,0 +1,76 @@
+[
+  {
+    "id": "NEURAL_SYNC_AI",
+    "name": "NEURAL_SYNC_AI",
+    "team": "TEAM_VOID_RUNNERS",
+    "description": "NEURAL_SYNC_AI is a decentralized machine learning platform designed to bridge the gap between high-latency edge computing and real-time inference. By leveraging custom-built neural kernels, the system allows for sub-millisecond data synchronization across distributed nodes.",
+    "projectIdLabel": "SYSTEM CORE V2.4",
+    "globalRank": 4,
+    "globalRankLabel": "Top 5% Tier",
+    "tags": ["BLOCKCHAIN", "AI/ML"],
+    "summaryMetrics": {
+      "latency": "0.42ms",
+      "nodes": "1,024",
+      "compression": "40%",
+      "security": "AES-256"
+    },
+    "techStack": ["RUST", "PYTORCH", "WASM", "DOCKER", "KUBERNETES", "gRPC"],
+    "engineerIds": ["felix_vander", "sasha_kovach", "marcus_chen"],
+    "previewCards": [
+      { "id": "preview_1", "label": "DATA_VISUALIZATION", "tone": "cyan" },
+      { "id": "preview_2", "label": "CORE_ARCHITECTURE", "tone": "purple" }
+    ]
+  },
+  {
+    "id": "NEURAL_SYNC_V3",
+    "name": "NEURAL_SYNC_V3",
+    "team": "TEAM_VOID_RUNNERS",
+    "description": "Sub-millisecond distributed inference kernels with privacy-first synchronization.",
+    "tags": ["BLOCKCHAIN", "AI/ML"]
+  },
+  {
+    "id": "KUBE_PULSE_MONITOR",
+    "name": "KUBE_PULSE_MONITOR",
+    "team": "KUBE_PULSE_TEAM",
+    "description": "Real-time telemetry and adaptive routing for container-native inference workloads.",
+    "tags": ["DEVOPS"]
+  },
+  {
+    "id": "CRYPTO_SENTINEL",
+    "name": "CRYPTO_SENTINEL",
+    "team": "SENTINEL_LABS",
+    "description": "Secure execution pipelines with audited Rust primitives and deterministic attestation.",
+    "tags": ["SECURITY", "RUST"]
+  },
+  {
+    "id": "FLUX_ROUTING_ALGO",
+    "name": "FLUX_ROUTING_ALGO",
+    "team": "FLUX_LABS",
+    "description": "Neon-optimized routing algorithm for low-latency distributed model graphs.",
+    "tags": ["ROUTING"]
+  },
+  {
+    "id": "GREENPULSE_IOT",
+    "name": "GreenPulse_IoT",
+    "team": "GreenPulse_Labs",
+    "description": "Edge IoT telemetry with adaptive compression and privacy-preserving inference.",
+    "tags": ["ARDUINO", "PYTHON"]
+  },
+  {
+    "id": "NEURAL_DRAFT_V2",
+    "name": "Neural_Draft_V2",
+    "team": "NEURAL_DRAFT_TEAM",
+    "description": "An AI-powered collaborative architecture tool that synthesizes spatial requirements into generative 3D wireframes in real-time.",
+    "projectIdLabel": "PROJECT ID: #7721-X",
+    "globalRank": 4,
+    "globalRankLabel": "Top 5% Tier",
+    "tags": ["AI/ML", "3D", "COLLAB"],
+    "techStack": ["Rust", "Next.js", "WebGL", "GPU"],
+    "engineerIds": ["felix_vander", "sasha_kovach"],
+    "previewCards": [
+      { "id": "preview_1", "label": "DATA_VISUALIZATION", "tone": "cyan" },
+      { "id": "preview_2", "label": "CORE_ARCHITECTURE", "tone": "purple" }
+    ]
+  }
+]
+

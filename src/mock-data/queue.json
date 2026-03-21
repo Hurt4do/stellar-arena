@@ -1,0 +1,43 @@
+[
+  {
+    "id": "queue_1",
+    "projectId": "NEURAL_SYNC_V3",
+    "teamName": "Neuro-Sync Engine",
+    "status": "in_progress",
+    "statusLabel": "IN PROGRESS",
+    "stackTags": ["PyTorch", "Next.js", "WebGL"],
+    "evaluationProgressPct": 60,
+    "actionLabel": "VIEW PROJECT"
+  },
+  {
+    "id": "queue_2",
+    "projectId": "KUBE_PULSE_MONITOR",
+    "teamName": "Vault-X Decentralized",
+    "status": "evaluated",
+    "statusLabel": "EVALUATED",
+    "stackTags": ["Solidity", "Rust"],
+    "evaluationProgressPct": 100,
+    "actionLabel": "EDIT SCORE"
+  },
+  {
+    "id": "queue_3",
+    "projectId": "CRYPTO_SENTINEL",
+    "teamName": "Echo-Locate AR",
+    "status": "pending",
+    "statusLabel": "PENDING",
+    "stackTags": ["Unity", "C#", "Oculus SDK"],
+    "evaluationProgressPct": 0,
+    "actionLabel": "START JUDGING"
+  },
+  {
+    "id": "queue_4",
+    "projectId": "GREENPULSE_IOT",
+    "teamName": "GreenPulse IoT",
+    "status": "in_progress",
+    "statusLabel": "IN PROGRESS",
+    "stackTags": ["Arduino", "Python"],
+    "evaluationProgressPct": 35,
+    "actionLabel": "REVIEW PROJECT"
+  }
+]
+

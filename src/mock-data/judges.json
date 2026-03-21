@@ -1,0 +1,21 @@
+[
+  {
+    "id": "felix_vander",
+    "name": "FELIX_VANDER",
+    "role": "BACKEND_ARCHITECT",
+    "colorTone": "cyan"
+  },
+  {
+    "id": "sasha_kovach",
+    "name": "SASHA_KOVACH",
+    "role": "AI/ML_LEAD",
+    "colorTone": "purple"
+  },
+  {
+    "id": "marcus_chen",
+    "name": "MARCUS_CHEN",
+    "role": "UI/UX_PROTOCOL",
+    "colorTone": "cyan"
+  }
+]
+

@@ -1,0 +1,39 @@
+[
+  {
+    "rank": 1,
+    "projectId": "NEURAL_SYNC_V3",
+    "projectName": "NEURAL_SYNC_V3",
+    "metadataTags": ["BLOCKCHAIN", "AI/ML"],
+    "efficiency": 9.8,
+    "innovation": 9.5,
+    "totalScore": 96.5
+  },
+  {
+    "rank": 2,
+    "projectId": "KUBE_PULSE_MONITOR",
+    "projectName": "KUBE_PULSE_MONITOR",
+    "metadataTags": ["DEVOPS"],
+    "efficiency": 9.2,
+    "innovation": 8.7,
+    "totalScore": 91.2
+  },
+  {
+    "rank": 3,
+    "projectId": "CRYPTO_SENTINEL",
+    "projectName": "CRYPTO_SENTINEL",
+    "metadataTags": ["SECURITY", "RUST"],
+    "efficiency": 8.5,
+    "innovation": 9.0,
+    "totalScore": 88.5
+  },
+  {
+    "rank": 4,
+    "projectId": "FLUX_ROUTING_ALGO",
+    "projectName": "FLUX_ROUTING_ALGO",
+    "metadataTags": ["ROUTING"],
+    "efficiency": 7.2,
+    "innovation": 8.1,
+    "totalScore": 80.2
+  }
+]
+

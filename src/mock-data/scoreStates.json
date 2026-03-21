@@ -1,0 +1,37 @@
+[
+  {
+    "projectId": "NEURAL_DRAFT_V2",
+    "rubric": [
+      {
+        "key": "innovation",
+        "title": "Innovation",
+        "description": "Originality and problem-solving uniqueness.",
+        "score": 8,
+        "tone": "cyan"
+      },
+      {
+        "key": "complexity",
+        "title": "Technical Complexity",
+        "description": "Depth of engineering and architectural rigor.",
+        "score": 9,
+        "tone": "purple"
+      },
+      {
+        "key": "ux",
+        "title": "User Experience",
+        "description": "Intuitiveness, accessibility, and interface flow.",
+        "score": 7,
+        "tone": "green"
+      },
+      {
+        "key": "presentation",
+        "title": "Presentation",
+        "description": "Quality of pitch, demo, and documentation.",
+        "score": 10,
+        "tone": "cyan"
+      }
+    ],
+    "judgeLog": "Detail technical strengths, weaknesses, and potential pivots..."
+  }
+]
+
