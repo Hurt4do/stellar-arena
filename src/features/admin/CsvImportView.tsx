@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Upload, FileText, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { upsertProjects, type DbProject } from "@/lib/db/projects";
@@ -106,6 +107,7 @@ type ImportResult = { imported: number; skipped: number; errors: string[] };
 
 export default function CsvImportView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [preview, setPreview] = useState<Omit<DbProject, "created_at">[]>([]);
@@ -168,6 +170,7 @@ export default function CsvImportView() {
     try {
       const { inserted } = await upsertProjects(preview);
       setResult({ imported: inserted, skipped: preview.length - inserted, errors: [] });
+      router.refresh();
       setPreview([]);
       setFileName(null);
     } catch (err) {
