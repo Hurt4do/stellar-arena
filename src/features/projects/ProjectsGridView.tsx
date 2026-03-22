@@ -22,8 +22,6 @@ export default function ProjectsGridView({
 }) {
   const [filter, setFilter] = useState<TrackFilter>(defaultTrack ?? "all");
 
-  const scoredSet = new Set(scoredProjectIds);
-
   const filtered = projects.filter((p) => {
     if (filter === "all") return true;
     const t = (p.track ?? "").toLowerCase();

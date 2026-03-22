@@ -12,7 +12,7 @@ export default async function ProjectsPage() {
 
   let projects: Project[] = [];
   let scoredProjectIds: string[] = [];
-  let evalCounts: Record<string, number> = {};
+  const evalCounts: Record<string, number> = {};
   let errorMessage: string | undefined;
 
   try {
