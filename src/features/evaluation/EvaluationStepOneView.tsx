@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Eye, Rocket, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Eye, Rocket, Sparkles, TrendingUp, Award, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import logo from "@/app/public/BAF1.png";
 import { upsertScores } from "@/lib/db/scores";
+import { upsertFeedback } from "@/lib/db/scores";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
 
 function stageClass(isVisible: boolean) {
@@ -18,6 +19,7 @@ function stageClass(isVisible: boolean) {
 }
 
 type PitchTag = "CONFIDENT" | "CLEAR" | "CREATIVE";
+type ScaleOutcome = "INSTAWARD" | "SCF_BUILD" | "CONTINUE_BUILDING";
 
 export default function EvaluationStepOneView({
   projectId,
@@ -40,9 +42,11 @@ export default function EvaluationStepOneView({
   const [comments, setComments] = useState<string[]>(() => criteria.map(() => ""));
   const [pitchTags, setPitchTags] = useState<PitchTag[]>([]);
   const [finalComment, setFinalComment] = useState("");
+  const [scaleOutcome, setScaleOutcome] = useState<ScaleOutcome | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const isScale = track.toLowerCase() === "scale";
   const currentBlock = criteria[blockIndex];
   const score = scores[blockIndex] ?? 0;
   const rawTotalScore = scores.reduce((acc, n) => acc + n, 0);
@@ -98,9 +102,15 @@ export default function EvaluationStepOneView({
         criterion_id: c.id,
         score: scores[i] ?? 0,
         comments: comments[i] || undefined,
-        pitch_tags: pitchTags.length > 0 ? pitchTags : undefined,
       }));
       await upsertScores(inputs);
+      await upsertFeedback({
+        project_id: projectId,
+        judge_id: judgeId,
+        final_comment: finalComment || undefined,
+        pitch_tags: pitchTags.length > 0 ? pitchTags : undefined,
+        outcome: isScale && scaleOutcome ? scaleOutcome : undefined,
+      });
       setShowSuccessScreen(true);
     } catch (err) {
       setSubmitError(String(err));
@@ -257,6 +267,72 @@ export default function EvaluationStepOneView({
               />
             </div>
           </div>
+
+          {/* Scale-only: outcome selector */}
+          {isScale && (
+            <div className="mt-6 rounded-2xl border border-neon-purple/20 bg-neon-purple/5 p-4 sm:p-6">
+              <div className="text-[11px] font-oxanium tracking-widest font-semibold text-neon-purple mb-1">
+                SCF PANEL RECOMMENDATION
+              </div>
+              <p className="text-[12px] font-oxanium tracking-wider text-black/50 mb-4">
+                Based on your evaluation, what outcome do you recommend for this team?
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {([
+                  {
+                    key: "INSTAWARD" as ScaleOutcome,
+                    label: "Instaward",
+                    sub: "Up to $15K",
+                    Icon: Award,
+                    color: "#00B3D4",
+                    bg: "rgba(0,179,212,0.06)",
+                    border: "rgba(0,179,212,0.3)",
+                  },
+                  {
+                    key: "SCF_BUILD" as ScaleOutcome,
+                    label: "SCF Build",
+                    sub: "Up to $150K",
+                    Icon: TrendingUp,
+                    color: "#B35CFF",
+                    bg: "rgba(179,92,255,0.06)",
+                    border: "rgba(179,92,255,0.3)",
+                  },
+                  {
+                    key: "CONTINUE_BUILDING" as ScaleOutcome,
+                    label: "Continue Building",
+                    sub: "Not ready yet",
+                    Icon: BookOpen,
+                    color: "rgba(0,0,0,0.4)",
+                    bg: "transparent",
+                    border: "rgba(0,0,0,0.12)",
+                  },
+                ]).map(({ key, label, sub, Icon, color, bg, border }) => {
+                  const active = scaleOutcome === key;
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => setScaleOutcome(active ? null : key)}
+                      className="rounded-xl border px-4 py-5 text-left transition-all"
+                      style={{
+                        background: active ? bg : "white",
+                        borderColor: active ? border : "rgba(0,0,0,0.1)",
+                        boxShadow: active ? `0 0 16px ${bg}` : "none",
+                      }}
+                    >
+                      <Icon className="h-5 w-5 mb-3" style={{ color }} />
+                      <div className="text-[12px] font-oxanium tracking-wider font-semibold" style={{ color: active ? color : "rgba(0,0,0,0.75)" }}>
+                        {label}
+                      </div>
+                      <div className="text-[10px] font-oxanium tracking-widest text-black/40 mt-0.5">
+                        {sub}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {submitError && (
             <p className="mt-3 text-[12px] font-oxanium tracking-wider text-red-500">{submitError}</p>

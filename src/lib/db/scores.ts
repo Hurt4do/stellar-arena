@@ -1,5 +1,20 @@
 import { supabase } from "@/lib/supabase";
 
+export interface UpsertFeedbackInput {
+  project_id: string;
+  judge_id: string;
+  final_comment?: string;
+  pitch_tags?: string[];
+  outcome?: string;
+}
+
+export async function upsertFeedback(input: UpsertFeedbackInput): Promise<void> {
+  const { error } = await supabase
+    .from("project_feedback")
+    .upsert(input, { onConflict: "project_id,judge_id" });
+  if (error) throw error;
+}
+
 export interface DbScore {
   id: string;
   project_id: string;

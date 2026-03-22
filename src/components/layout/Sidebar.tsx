@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   Trophy,
   Upload,
+  Settings2,
 } from "lucide-react";
 import Image from "next/image";
 import logo from "@/app/public/BAF1.png";
@@ -29,12 +30,13 @@ const NAV: Record<Role, NavItem[]> = {
     { label: "Judging Guide", href: "/guide",       Icon: BookOpen },
   ],
   admin: [
-    { label: "Overview",      href: "/overview",    Icon: LayoutGrid },
-    { label: "All Projects",  href: "/projects",    Icon: Boxes },
-    { label: "My Scoring",    href: "/my-scoring",  Icon: ClipboardList },
-    { label: "Leaderboard",   href: "/leaderboard", Icon: Trophy },
-    { label: "Judging Guide", href: "/guide",       Icon: BookOpen },
-    { label: "Import CSV",    href: "/admin/import", Icon: Upload },
+    { label: "Overview",         href: "/overview",       Icon: LayoutGrid },
+    { label: "All Projects",     href: "/projects",       Icon: Boxes },
+    { label: "My Scoring",       href: "/my-scoring",     Icon: ClipboardList },
+    { label: "Leaderboard",      href: "/leaderboard",    Icon: Trophy },
+    { label: "Judging Guide",    href: "/guide",          Icon: BookOpen },
+    { label: "Import CSV",       href: "/admin/import",   Icon: Upload },
+    { label: "Manage Projects",  href: "/admin/manage",   Icon: Settings2 },
   ],
 };
 

@@ -35,6 +35,22 @@ export async function getProject(id: string): Promise<DbProject | null> {
   return data;
 }
 
+export async function deleteProject(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteAllProjects(): Promise<void> {
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .neq("id", "");  // matches all rows
+  if (error) throw error;
+}
+
 export async function upsertProjects(rows: Omit<DbProject, "created_at">[]): Promise<{ inserted: number; updated: number }> {
   const { data, error } = await supabase
     .from("projects")
