@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Eye, ExternalLink, Rocket, Sparkles, TrendingUp, Award, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,13 +11,6 @@ import { upsertScores } from "@/lib/db/scores";
 import { upsertFeedback } from "@/lib/db/scores";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
 import type { DbProject } from "@/lib/db/projects";
-
-function stageClass(isVisible: boolean) {
-  return cn(
-    "transition-all duration-500 ease-out",
-    isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
-  );
-}
 
 type PitchTag = "CONFIDENT" | "CLEAR" | "CREATIVE";
 type ScaleOutcome = "INSTAWARD" | "SCF_BUILD" | "CONTINUE_BUILDING";
@@ -37,9 +30,6 @@ export default function EvaluationStepOneView({
   judgeId: string | null;
   project: DbProject | null;
 }) {
-  const [stage, setStage] = useState(0);
-  const [blockIndex, setBlockIndex] = useState(0);
-  const [showFinalScreen, setShowFinalScreen] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [scores, setScores] = useState<number[]>(() => criteria.map(() => 0));
   const [comments, setComments] = useState<string[]>(() => criteria.map(() => ""));
@@ -50,39 +40,24 @@ export default function EvaluationStepOneView({
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const isScale = track.toLowerCase() === "scale";
-  const currentBlock = criteria[blockIndex];
-  const score = scores[blockIndex] ?? 0;
   const rawTotalScore = scores.reduce((acc, n) => acc + n, 0);
   const maxTotalScore = criteria.reduce((acc, b) => acc + b.max_score, 0);
   const totalScore = maxTotalScore > 0 ? Math.round((rawTotalScore / maxTotalScore) * 100) : 0;
-  const progressPct = criteria.length > 0 ? Math.round(((blockIndex + 1) / criteria.length) * 100) : 0;
 
-  const updateScore = (newScore: number) => {
+  const updateScore = (idx: number, newScore: number) => {
     setScores((prev) => {
       const next = [...prev];
-      next[blockIndex] = newScore;
+      next[idx] = newScore;
       return next;
     });
   };
 
-  const updateComment = (text: string) => {
+  const updateComment = (idx: number, text: string) => {
     setComments((prev) => {
       const next = [...prev];
-      next[blockIndex] = text;
+      next[idx] = text;
       return next;
     });
-  };
-
-  const handleProceed = () => {
-    if (blockIndex < criteria.length - 1) {
-      setBlockIndex((i) => i + 1);
-      return;
-    }
-    setShowFinalScreen(true);
-  };
-
-  const handleBack = () => {
-    if (blockIndex > 0) setBlockIndex((i) => i - 1);
   };
 
   const togglePitchTag = (tag: PitchTag) => {
@@ -121,14 +96,6 @@ export default function EvaluationStepOneView({
       setSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    const timeline = [120, 340, 600, 860, 1120];
-    const timers = timeline.map((delay, idx) =>
-      window.setTimeout(() => setStage(idx + 1), delay),
-    );
-    return () => timers.forEach((id) => window.clearTimeout(id));
-  }, []);
 
   // Guard: no criteria loaded
   if (criteria.length === 0) {
@@ -204,177 +171,6 @@ export default function EvaluationStepOneView({
     );
   }
 
-  if (showFinalScreen) {
-    return (
-      <div className="space-y-4">
-        <section className="rounded-2xl border border-black/10 bg-white p-4 sm:p-6 md:p-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="text-[11px] font-oxanium tracking-widest text-black/55">
-              FINAL REFLECTION
-            </div>
-            <div className="text-[18px] font-oxanium tracking-wider text-neon-cyan font-semibold">
-              100%
-            </div>
-          </div>
-          <div className="mt-3 h-[3px] bg-black/10 rounded-full overflow-hidden">
-            <div className="h-full bg-neon-cyan rounded-full" style={{ width: "100%" }} />
-          </div>
-
-          <div className="mt-5 sm:mt-7 rounded-2xl border border-black/10 bg-[linear-gradient(180deg,rgba(0,179,212,0.04),rgba(179,92,255,0.03))] p-4 sm:p-6 md:p-8">
-            <h2 className="text-[32px] sm:text-[38px] lg:text-[44px] leading-[1.06] sm:leading-[1.04] font-oxanium font-semibold tracking-wide text-black">
-              Final thoughts on the{" "}
-              <span className="text-neon-cyan">Pitch &amp; Presentation?</span>
-            </h2>
-            <p className="mt-3 sm:mt-4 text-[15px] sm:text-[18px] font-oxanium tracking-wide text-black/60 max-w-[820px]">
-              Analyze the delivery, narrative flow, and overall impact of the
-              project&apos;s verbal and visual representation.
-            </p>
-
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {([
-                { label: "CONFIDENT" as PitchTag, Icon: Rocket },
-                { label: "CLEAR" as PitchTag, Icon: Eye },
-                { label: "CREATIVE" as PitchTag, Icon: Sparkles },
-              ]).map(({ label, Icon }) => (
-                <button
-                  type="button"
-                  key={label}
-                  onClick={() => togglePitchTag(label)}
-                  className={cn(
-                    "rounded-xl border px-4 py-6 transition-colors",
-                    pitchTags.includes(label)
-                      ? "border-neon-cyan/50 bg-neon-cyan/5"
-                      : "border-black/10 bg-white hover:bg-black/[0.03]",
-                  )}
-                >
-                  <div className="flex items-center justify-center">
-                    <Icon className={cn("h-5 w-5", pitchTags.includes(label) ? "text-neon-cyan" : "text-black/70")} />
-                  </div>
-                  <div className="mt-3 text-[11px] font-oxanium tracking-widest text-black/65">
-                    {label}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-7">
-              <div className="text-[12px] font-oxanium tracking-widest font-semibold text-neon-cyan">
-                ADDITIONAL OBSERVATIONS
-              </div>
-              <textarea
-                rows={5}
-                value={finalComment}
-                onChange={(e) => setFinalComment(e.target.value)}
-                className="mt-3 w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[13px] font-oxanium tracking-wider outline-none focus:ring-2 focus:ring-neon-cyan/30"
-                placeholder="Briefly log terminal feedback here..."
-              />
-            </div>
-          </div>
-
-          {/* Scale-only: outcome selector */}
-          {isScale && (
-            <div className="mt-6 rounded-2xl border border-neon-purple/20 bg-neon-purple/5 p-4 sm:p-6">
-              <div className="text-[11px] font-oxanium tracking-widest font-semibold text-neon-purple mb-1">
-                SCF PANEL RECOMMENDATION
-              </div>
-              <p className="text-[12px] font-oxanium tracking-wider text-black/50 mb-4">
-                Based on your evaluation, what outcome do you recommend for this team?
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {([
-                  {
-                    key: "INSTAWARD" as ScaleOutcome,
-                    label: "Instaward",
-                    sub: "Up to $15K",
-                    Icon: Award,
-                    color: "#00B3D4",
-                    bg: "rgba(0,179,212,0.06)",
-                    border: "rgba(0,179,212,0.3)",
-                  },
-                  {
-                    key: "SCF_BUILD" as ScaleOutcome,
-                    label: "SCF Build",
-                    sub: "Up to $150K",
-                    Icon: TrendingUp,
-                    color: "#B35CFF",
-                    bg: "rgba(179,92,255,0.06)",
-                    border: "rgba(179,92,255,0.3)",
-                  },
-                  {
-                    key: "CONTINUE_BUILDING" as ScaleOutcome,
-                    label: "Continue Building",
-                    sub: "Not ready yet",
-                    Icon: BookOpen,
-                    color: "rgba(0,0,0,0.4)",
-                    bg: "transparent",
-                    border: "rgba(0,0,0,0.12)",
-                  },
-                ]).map(({ key, label, sub, Icon, color, bg, border }) => {
-                  const active = scaleOutcome === key;
-                  return (
-                    <button
-                      type="button"
-                      key={key}
-                      onClick={() => setScaleOutcome(active ? null : key)}
-                      className="rounded-xl border px-4 py-5 text-left transition-all"
-                      style={{
-                        background: active ? bg : "white",
-                        borderColor: active ? border : "rgba(0,0,0,0.1)",
-                        boxShadow: active ? `0 0 16px ${bg}` : "none",
-                      }}
-                    >
-                      <Icon className="h-5 w-5 mb-3" style={{ color }} />
-                      <div className="text-[12px] font-oxanium tracking-wider font-semibold" style={{ color: active ? color : "rgba(0,0,0,0.75)" }}>
-                        {label}
-                      </div>
-                      <div className="text-[10px] font-oxanium tracking-widest text-black/40 mt-0.5">
-                        {sub}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {submitError && (
-            <p className="mt-3 text-[12px] font-oxanium tracking-wider text-red-500">{submitError}</p>
-          )}
-
-          <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <button
-              type="button"
-              onClick={() => setShowFinalScreen(false)}
-              className="inline-flex items-center gap-2 text-[11px] font-oxanium tracking-widest text-black/55 hover:text-black transition-colors order-1 sm:order-none"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              PREVIOUS
-            </button>
-
-            <div className="rounded-full border border-black/10 bg-white px-5 py-2 text-center order-2 sm:order-none self-center">
-              <div className="text-[9px] font-oxanium tracking-widest text-black/45">
-                TOTAL EVAL
-              </div>
-              <div className="text-[18px] font-oxanium tracking-wider font-semibold text-neon-cyan">
-                {totalScore}/100
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting}
-              variant="default"
-              className="h-12 w-full sm:w-auto sm:min-w-[180px] order-3 sm:order-none"
-            >
-              {submitting ? "SAVING..." : "Submit review"}
-            </Button>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       {/* Track + project label */}
@@ -409,18 +205,6 @@ export default function EvaluationStepOneView({
                 <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.bounties}</div>
               </div>
             )}
-            {project.track && (
-              <div>
-                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">TRACK</div>
-                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.track}</div>
-              </div>
-            )}
-            {project.review_status && (
-              <div>
-                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">REVIEW STATUS</div>
-                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.review_status}</div>
-              </div>
-            )}
             {project.submission_time && (
               <div>
                 <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">SUBMITTED</div>
@@ -428,7 +212,6 @@ export default function EvaluationStepOneView({
               </div>
             )}
           </div>
-          {/* Links */}
           {(project.profile_url || project.demo_link || project.github) && (
             <div className="mt-3 pt-3 border-t border-black/5 flex flex-wrap gap-3">
               {project.profile_url && (
@@ -451,111 +234,172 @@ export default function EvaluationStepOneView({
         </section>
       )}
 
-      <div className="grid grid-cols-1 gap-3 md:gap-4">
-        <section className={cn("rounded-2xl border border-black/10 bg-white p-4 sm:p-6 md:p-8", stageClass(stage >= 1))}>
-          {/* Progress bar */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="text-[11px] font-oxanium tracking-widest text-black/55">
-              {currentBlock.pillar_name.toUpperCase()}
-            </div>
-            <div className="text-[18px] font-oxanium tracking-wider text-neon-cyan font-semibold">
-              {progressPct}%
-            </div>
-          </div>
-          <div className="mt-3 h-[3px] bg-black/10 rounded-full overflow-hidden">
-            <div className="h-full bg-neon-cyan rounded-full" style={{ width: `${progressPct}%` }} />
-          </div>
-
-          <div className={cn("mt-5 sm:mt-7 rounded-2xl border border-black/10 bg-[linear-gradient(180deg,rgba(0,179,212,0.04),rgba(179,92,255,0.03))] p-4 sm:p-6 md:p-8", stageClass(stage >= 3))}>
-            <div className="text-[11px] font-oxanium tracking-widest text-black/45 mb-3">
-              CRITERION {String(blockIndex + 1).padStart(2, "0")}/{String(criteria.length).padStart(2, "0")}
-            </div>
-            <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] leading-[1.06] font-oxanium font-semibold tracking-wide text-black">
-              <span className="text-neon-cyan">{currentBlock.pillar_name}</span>
-            </h2>
-            <p className="mt-3 sm:mt-4 text-[15px] sm:text-[17px] font-oxanium tracking-wide text-black/60 max-w-[820px]">
-              {currentBlock.description}
-            </p>
-
-            <div className="mt-7 sm:mt-10">
-              <input
-                type="range"
-                min={0}
-                max={currentBlock.max_score}
-                value={score}
-                onChange={(e) => updateScore(Number(e.target.value))}
-                className="w-full accent-[#00B3D4]"
-              />
-              <div className="mt-2 flex items-center justify-between text-[10px] font-oxanium tracking-widest text-black/35">
-                <span>IRRELEVANT</span>
-                <span>GAME_CHANGER</span>
+      {/* All criteria on one page */}
+      <div className="space-y-4">
+        {criteria.map((criterion, idx) => (
+          <section key={criterion.id} className="rounded-2xl border border-black/10 bg-white p-4 sm:p-6 md:p-8">
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <div className="text-[10px] font-oxanium tracking-widest text-black/40">
+                CRITERION {String(idx + 1).padStart(2, "0")}/{String(criteria.length).padStart(2, "0")}
+              </div>
+              <div className="text-[10px] font-oxanium tracking-widest text-black/40">
+                {criterion.weight_pct}% WEIGHT
               </div>
             </div>
 
-            <div className="mt-6 text-center">
-              <div className="text-[52px] sm:text-[64px] leading-none font-oxanium font-semibold text-neon-cyan">
-                {score}
-                <span className="text-[24px] sm:text-[30px] text-black/40">
-                  /{currentBlock.max_score}
-                </span>
-              </div>
-              <div className="text-[10px] font-oxanium tracking-widest text-black/45 mt-2">
-                IMPACT SCORE · {currentBlock.weight_pct}% WEIGHT
-              </div>
-            </div>
+            <div className="rounded-2xl border border-black/10 bg-[linear-gradient(180deg,rgba(0,179,212,0.04),rgba(179,92,255,0.03))] p-4 sm:p-6">
+              <h3 className="text-[22px] sm:text-[26px] font-oxanium font-semibold tracking-wide text-neon-cyan">
+                {criterion.pillar_name}
+              </h3>
+              <p className="mt-2 text-[13px] sm:text-[15px] font-oxanium tracking-wide text-black/60">
+                {criterion.description}
+              </p>
 
-            <div className="mt-7">
-              <div className="text-[12px] font-oxanium tracking-widest font-semibold text-neon-cyan">
-                JUDGE&apos;S COMMENTS &amp; OBSERVATIONS
+              <div className="mt-6">
+                <input
+                  type="range"
+                  min={0}
+                  max={criterion.max_score}
+                  value={scores[idx] ?? 0}
+                  onChange={(e) => updateScore(idx, Number(e.target.value))}
+                  className="w-full accent-[#00B3D4]"
+                />
+                <div className="mt-1 flex items-center justify-between text-[10px] font-oxanium tracking-widest text-black/35">
+                  <span>IRRELEVANT</span>
+                  <span className="text-[20px] font-semibold text-neon-cyan">
+                    {scores[idx] ?? 0}
+                    <span className="text-[13px] text-black/40">/{criterion.max_score}</span>
+                  </span>
+                  <span>GAME_CHANGER</span>
+                </div>
               </div>
-              <textarea
-                rows={5}
-                value={comments[blockIndex] ?? ""}
-                onChange={(e) => updateComment(e.target.value)}
-                className="mt-3 w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[13px] font-oxanium tracking-wider outline-none focus:ring-2 focus:ring-neon-cyan/30"
-                placeholder="Enter detailed feedback here..."
-              />
-            </div>
-          </div>
 
-          <div className={cn("mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4", stageClass(stage >= 4))}>
-            {blockIndex === 0 ? (
-              <Link
-                href={`/projects/${projectId}`}
-                className="inline-flex items-center gap-2 text-[11px] font-oxanium tracking-widest text-black/55 hover:text-black transition-colors order-1 sm:order-none"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                BACK
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="inline-flex items-center gap-2 text-[11px] font-oxanium tracking-widest text-black/55 hover:text-black transition-colors order-1 sm:order-none"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                BACK
-              </button>
-            )}
-
-            <div className="rounded-full border border-black/10 bg-white px-5 py-2 text-center order-2 sm:order-none self-center">
-              <div className="text-[9px] font-oxanium tracking-widest text-black/45">TOTAL EVAL</div>
-              <div className="text-[18px] font-oxanium tracking-wider font-semibold text-neon-cyan">
-                {totalScore}/100
+              <div className="mt-5">
+                <div className="text-[11px] font-oxanium tracking-widest font-semibold text-neon-cyan mb-2">
+                  COMMENTS &amp; OBSERVATIONS
+                </div>
+                <textarea
+                  rows={3}
+                  value={comments[idx] ?? ""}
+                  onChange={(e) => updateComment(idx, e.target.value)}
+                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[13px] font-oxanium tracking-wider outline-none focus:ring-2 focus:ring-neon-cyan/30"
+                  placeholder="Optional notes for this criterion..."
+                />
               </div>
             </div>
-
-            <Button
-              type="button"
-              onClick={handleProceed}
-              variant="default"
-              className="h-12 w-full sm:w-auto sm:min-w-[180px] order-3 sm:order-none"
-            >
-              {blockIndex === criteria.length - 1 ? "FINAL STEP" : "PROCEED"}
-            </Button>
-          </div>
-        </section>
+          </section>
+        ))}
       </div>
+
+      {/* Final reflection + submit */}
+      <section className="rounded-2xl border border-black/10 bg-white p-4 sm:p-6 md:p-8">
+        <h3 className="text-[18px] font-oxanium font-semibold tracking-wide text-black mb-5">
+          Final thoughts on the <span className="text-neon-cyan">Pitch &amp; Presentation?</span>
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {([
+            { label: "CONFIDENT" as PitchTag, Icon: Rocket },
+            { label: "CLEAR" as PitchTag, Icon: Eye },
+            { label: "CREATIVE" as PitchTag, Icon: Sparkles },
+          ]).map(({ label, Icon }) => (
+            <button
+              type="button"
+              key={label}
+              onClick={() => togglePitchTag(label)}
+              className={cn(
+                "rounded-xl border px-4 py-5 transition-colors",
+                pitchTags.includes(label)
+                  ? "border-neon-cyan/50 bg-neon-cyan/5"
+                  : "border-black/10 bg-white hover:bg-black/[0.03]",
+              )}
+            >
+              <div className="flex items-center justify-center">
+                <Icon className={cn("h-5 w-5", pitchTags.includes(label) ? "text-neon-cyan" : "text-black/70")} />
+              </div>
+              <div className="mt-3 text-[11px] font-oxanium tracking-widest text-black/65">{label}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-6">
+          <div className="text-[12px] font-oxanium tracking-widest font-semibold text-neon-cyan mb-2">
+            ADDITIONAL OBSERVATIONS
+          </div>
+          <textarea
+            rows={4}
+            value={finalComment}
+            onChange={(e) => setFinalComment(e.target.value)}
+            className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[13px] font-oxanium tracking-wider outline-none focus:ring-2 focus:ring-neon-cyan/30"
+            placeholder="Briefly log terminal feedback here..."
+          />
+        </div>
+
+        {/* Scale-only: outcome selector */}
+        {isScale && (
+          <div className="mt-6 rounded-2xl border border-neon-purple/20 bg-neon-purple/5 p-4 sm:p-6">
+            <div className="text-[11px] font-oxanium tracking-widest font-semibold text-neon-purple mb-1">
+              SCF PANEL RECOMMENDATION
+            </div>
+            <p className="text-[12px] font-oxanium tracking-wider text-black/50 mb-4">
+              Based on your evaluation, what outcome do you recommend for this team?
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {([
+                { key: "INSTAWARD" as ScaleOutcome, label: "Instaward", sub: "Up to $15K", Icon: Award, color: "#00B3D4", bg: "rgba(0,179,212,0.06)", border: "rgba(0,179,212,0.3)" },
+                { key: "SCF_BUILD" as ScaleOutcome, label: "SCF Build", sub: "Up to $150K", Icon: TrendingUp, color: "#B35CFF", bg: "rgba(179,92,255,0.06)", border: "rgba(179,92,255,0.3)" },
+                { key: "CONTINUE_BUILDING" as ScaleOutcome, label: "Continue Building", sub: "Not ready yet", Icon: BookOpen, color: "rgba(0,0,0,0.4)", bg: "transparent", border: "rgba(0,0,0,0.12)" },
+              ]).map(({ key, label, sub, Icon, color, bg, border }) => {
+                const active = scaleOutcome === key;
+                return (
+                  <button
+                    type="button"
+                    key={key}
+                    onClick={() => setScaleOutcome(active ? null : key)}
+                    className="rounded-xl border px-4 py-5 text-left transition-all"
+                    style={{ background: active ? bg : "white", borderColor: active ? border : "rgba(0,0,0,0.1)", boxShadow: active ? `0 0 16px ${bg}` : "none" }}
+                  >
+                    <Icon className="h-5 w-5 mb-3" style={{ color }} />
+                    <div className="text-[12px] font-oxanium tracking-wider font-semibold" style={{ color: active ? color : "rgba(0,0,0,0.75)" }}>{label}</div>
+                    <div className="text-[10px] font-oxanium tracking-widest text-black/40 mt-0.5">{sub}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {submitError && (
+          <p className="mt-3 text-[12px] font-oxanium tracking-wider text-red-500">{submitError}</p>
+        )}
+
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <Link
+            href={`/projects/${projectId}`}
+            className="inline-flex items-center gap-2 text-[11px] font-oxanium tracking-widest text-black/55 hover:text-black transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            BACK TO PROJECT
+          </Link>
+
+          <div className="rounded-full border border-black/10 bg-white px-5 py-2 text-center self-center">
+            <div className="text-[9px] font-oxanium tracking-widest text-black/45">TOTAL EVAL</div>
+            <div className="text-[18px] font-oxanium tracking-wider font-semibold text-neon-cyan">
+              {totalScore}/100
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting}
+            variant="default"
+            className="h-12 w-full sm:w-auto sm:min-w-[200px]"
+          >
+            {submitting ? "SAVING..." : "Submit Review"}
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }

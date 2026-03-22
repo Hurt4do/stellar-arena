@@ -21,7 +21,8 @@ type NavItem = { label: string; href: string; Icon: React.ElementType };
 
 const NAV: Record<Role, NavItem[]> = {
   builder: [
-    { label: "Leaderboard", href: "/leaderboard", Icon: Trophy },
+    { label: "All Projects", href: "/projects",   Icon: Boxes },
+    { label: "Leaderboard",  href: "/leaderboard", Icon: Trophy },
   ],
   mentor: [
     { label: "Overview",      href: "/overview",    Icon: LayoutGrid },

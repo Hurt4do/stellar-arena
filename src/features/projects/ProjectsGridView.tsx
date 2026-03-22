@@ -98,7 +98,7 @@ export default function ProjectsGridView({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 overflow-visible">
           {filtered.map((p, idx) => (
-            <div key={p.id} className="relative">
+            <div key={p.id} className="relative flex flex-col">
               {scoredSet.has(p.id) && (
                 <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1 rounded-full bg-neon-cyan px-2 py-0.5 shadow-[0_0_10px_rgba(0,179,212,0.4)]">
                   <CheckCircle2 className="h-3 w-3 text-white" />

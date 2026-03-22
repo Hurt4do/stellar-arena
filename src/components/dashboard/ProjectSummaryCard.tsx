@@ -19,7 +19,7 @@ export default function ProjectSummaryCard({
     <Link
       href={href}
       className={cn(
-        "group rounded-xl border border-black/10 bg-white p-5 hover:bg-white/80 transition-colors",
+        "group flex flex-col h-full rounded-xl border border-black/10 bg-white p-5 hover:bg-white/80 transition-colors",
         borderClass,
       )}
     >

@@ -1,10 +1,14 @@
+import { getProject, normalizeTrack } from "@/lib/db/projects";
 import ProjectSummaryView from "@/features/projects/ProjectSummaryView";
 
-export default function ProjectSummaryRoute({
+export default async function ProjectSummaryRoute({
   params,
 }: {
   params: { projectId: string };
 }) {
-  return <ProjectSummaryView projectId={params.projectId} />;
+  const project = await getProject(params.projectId).catch(() => null);
+  const normalized = project
+    ? { ...project, track: normalizeTrack(project.track) ?? project.track }
+    : null;
+  return <ProjectSummaryView project={normalized} />;
 }
-
