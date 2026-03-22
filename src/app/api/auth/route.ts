@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validatePasscode, COOKIE_ROLE, COOKIE_NAME, COOKIE_TRACK, COOKIE_JUDGE_ID, COOKIE_OPTS, type Role } from "@/lib/auth";
+import { COOKIE_ROLE, COOKIE_NAME, COOKIE_TRACK, COOKIE_JUDGE_ID, COOKIE_OPTS, type Role } from "@/lib/auth";
+import { validatePasscode } from "@/lib/auth.server";
 import { supabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
