@@ -17,5 +17,11 @@ export async function getRubricCriteria(track: string): Promise<DbRubricCriterio
     .eq("track", track)
     .order("order_index");
   if (error) throw error;
-  return data ?? [];
+  // Deduplicate by order_index in case schema was run multiple times
+  const seen = new Set<number>();
+  return (data ?? []).filter((row) => {
+    if (seen.has(row.order_index)) return false;
+    seen.add(row.order_index);
+    return true;
+  });
 }

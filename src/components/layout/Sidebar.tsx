@@ -85,10 +85,9 @@ function TrackSwitcher({ currentTrack }: { currentTrack: "genesis" | "scale" | n
 }
 
 function MobileLogoutButton() {
-  const router = useRouter();
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    window.location.href = "/login";
   }
   return (
     <button

@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import logo from "@/app/public/BAF1.png";
 import { User2, Gavel, ShieldCheck, ChevronLeft, Eye, EyeOff } from "lucide-react";
 import type { Role } from "@/lib/auth";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
 
@@ -61,7 +60,7 @@ function LoginForm() {
       });
       setLoading(false);
       if (res.ok) {
-        router.push(from && from !== "/login" ? from : "/leaderboard");
+        window.location.href = from && from !== "/login" ? from : "/leaderboard";
       } else {
         setError("Login failed. Try again.");
       }
@@ -77,7 +76,7 @@ function LoginForm() {
 
     if (role === "admin") {
       const ok = await callAuth();
-      if (ok) router.push(from && from !== "/login" ? from : "/overview");
+      if (ok) window.location.href = from && from !== "/login" ? from : "/overview";
       return;
     }
     // mentor → go to track selection
@@ -88,7 +87,7 @@ function LoginForm() {
   async function handleTrackSelect(t: "genesis" | "scale") {
     setTrack(t);
     const ok = await callAuth(t);
-    if (ok) router.push(from && from !== "/login" ? from : "/overview");
+    if (ok) window.location.href = from && from !== "/login" ? from : "/overview";
   }
 
   const totalSteps = role === "mentor" ? 3 : role === "admin" ? 2 : 1;

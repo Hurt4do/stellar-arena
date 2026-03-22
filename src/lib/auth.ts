@@ -20,6 +20,7 @@ export function canAccessPath(role: Role, pathname: string): boolean {
   if (role === "admin") return true;
   if (pathname.startsWith("/admin")) return false;
   if (pathname.startsWith("/leaderboard")) return true;
+  if (pathname.startsWith("/projects")) return true;
   if (role === "builder") return false;
   return true;
 }

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import LeaderboardView from "@/features/leaderboard/LeaderboardView";
 import { getProjects } from "@/lib/db/projects";
 import { getLeaderboardScores } from "@/lib/db/scores";

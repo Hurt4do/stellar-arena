@@ -102,6 +102,12 @@ export default function ProjectSummaryView({ project }: { project: DbProject | n
                 <div className="text-[12px] font-oxanium tracking-wider text-black/70">{project.review_status}</div>
               </div>
             )}
+            {project.last_updated && (
+              <div>
+                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-1">LAST UPDATED</div>
+                <div className="text-[12px] font-oxanium tracking-wider text-black/70">{project.last_updated}</div>
+              </div>
+            )}
           </div>
         </div>
 
