@@ -8,7 +8,6 @@ import type { QueueItem } from "@/types/dashboard";
 
 export default async function OverviewView() {
   let totalProjects = 0;
-  let scoredProjects = 0;
   let queue: QueueItem[] = [];
 
   try {
@@ -19,7 +18,6 @@ export default async function OverviewView() {
 
     totalProjects = projects.length;
     const scoredIds = new Set(leaderboardScores.map((s) => s.project_id));
-    scoredProjects = scoredIds.size;
 
     queue = projects.map((p) => ({
       id: p.id,
