@@ -9,13 +9,11 @@ type TrackFilter = "all" | "genesis" | "scale";
 
 export default function ProjectsGridView({
   projects,
-  scoredProjectIds,
   evalCounts = {},
   errorMessage,
   defaultTrack,
 }: {
   projects: Project[];
-  scoredProjectIds: string[];
   evalCounts?: Record<string, number>;
   errorMessage?: string;
   defaultTrack?: "genesis" | "scale" | null;
