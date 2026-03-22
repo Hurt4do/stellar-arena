@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import ProjectsGridView from "@/features/projects/ProjectsGridView";
 import { getProjects, normalizeTrack } from "@/lib/db/projects";
-import { getJudgeScores } from "@/lib/db/scores";
+import { getJudgeScores, getLeaderboardScores } from "@/lib/db/scores";
 import { COOKIE_JUDGE_ID, COOKIE_TRACK } from "@/lib/auth";
 import type { Project } from "@/types/dashboard";
 
@@ -12,10 +12,11 @@ export default async function ProjectsPage() {
 
   let projects: Project[] = [];
   let scoredProjectIds: string[] = [];
+  let evalCounts: Record<string, number> = {};
   let errorMessage: string | undefined;
 
   try {
-    const data = await getProjects();
+    const [data, leaderboardScores] = await Promise.all([getProjects(), getLeaderboardScores()]);
     projects = data.map((p) => {
       const normalized = normalizeTrack(p.track) ?? p.track;
       return {
@@ -26,6 +27,7 @@ export default async function ProjectsPage() {
         tags: normalized ? [normalized] : [],
       };
     });
+    for (const s of leaderboardScores) evalCounts[s.project_id] = s.judge_count;
   } catch (err) {
     errorMessage = String(err);
   }
@@ -48,6 +50,7 @@ export default async function ProjectsPage() {
     <ProjectsGridView
       projects={projects}
       scoredProjectIds={scoredProjectIds}
+      evalCounts={evalCounts}
       errorMessage={errorMessage}
       defaultTrack={defaultTrack}
     />

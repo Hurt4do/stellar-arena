@@ -20,13 +20,18 @@ export default function ProjectQueueCard({
           <div className="text-[14px] font-oxanium tracking-wider font-semibold text-black leading-tight">
             {item.teamName}
           </div>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
             <Badge
               variant={item.status === "evaluated" ? "green" : item.status === "in_progress" ? "cyan" : "gray"}
               className="px-2 py-0.5"
             >
               {item.statusLabel}
             </Badge>
+            {(item.evalCount ?? 0) > 0 && (
+              <span className="text-[10px] font-oxanium tracking-widest text-black/45">
+                {item.evalCount} eval{item.evalCount !== 1 ? "s" : ""}
+              </span>
+            )}
           </div>
         </div>
       </div>

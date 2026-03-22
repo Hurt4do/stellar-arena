@@ -76,6 +76,7 @@ export interface QueueItem {
   stackTags: string[];
   evaluationProgressPct: number; // 0..100
   actionLabel: string;
+  evalCount?: number; // number of judges who have evaluated this project
 }
 
 export interface RankingRow {

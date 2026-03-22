@@ -20,7 +20,8 @@ export default async function OverviewView({
       getLeaderboardScores(),
     ]);
 
-    const scoredIds = new Set(leaderboardScores.map((s) => s.project_id));
+    const evalCountMap: Record<string, number> = {};
+    for (const s of leaderboardScores) evalCountMap[s.project_id] = s.judge_count;
 
     // Normalize tracks and filter by the judge's current track
     const filtered = projects
@@ -33,16 +34,20 @@ export default async function OverviewView({
 
     totalProjects = filtered.length;
 
-    queue = filtered.map((p) => ({
-      id: p.id,
-      projectId: p.id,
-      teamName: p.name,
-      status: scoredIds.has(p.id) ? "evaluated" : "pending",
-      statusLabel: scoredIds.has(p.id) ? "EVALUATED" : "PENDING",
-      stackTags: p.track ? [p.track] : [],
-      evaluationProgressPct: scoredIds.has(p.id) ? 100 : 0,
-      actionLabel: scoredIds.has(p.id) ? "VIEW PROJECT" : "EVALUATE",
-    }));
+    queue = filtered.map((p) => {
+      const count = evalCountMap[p.id] ?? 0;
+      return {
+        id: p.id,
+        projectId: p.id,
+        teamName: p.name,
+        status: count > 0 ? "evaluated" : "pending",
+        statusLabel: count > 0 ? "EVALUATED" : "PENDING",
+        stackTags: p.track ? [p.track] : [],
+        evaluationProgressPct: count > 0 ? 100 : 0,
+        actionLabel: "EVALUATE",
+        evalCount: count,
+      };
+    });
   } catch {
     // Supabase not yet configured — fall through with empty state
   }
@@ -83,12 +88,8 @@ export default async function OverviewView({
           {queue.map((item) => (
             <ProjectQueueCard
               key={item.id}
-              item={{ ...item, actionLabel: item.status === "evaluated" ? "VIEW PROJECT" : "EVALUATE" }}
-              primaryActionHref={
-                item.status === "evaluated"
-                  ? `/projects/${item.projectId}`
-                  : `/evaluation/${item.projectId}`
-              }
+              item={item}
+              primaryActionHref={`/evaluation/${item.projectId}`}
             />
           ))}
         </div>
