@@ -7,6 +7,7 @@ import {
   Boxes,
   ClipboardList,
   LayoutGrid,
+  LogOut,
   Trophy,
   Upload,
   Settings2,
@@ -82,6 +83,25 @@ function TrackSwitcher({ currentTrack }: { currentTrack: "genesis" | "scale" | n
   );
 }
 
+function MobileLogoutButton() {
+  const router = useRouter();
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
+  return (
+    <button
+      onClick={handleLogout}
+      className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg"
+    >
+      <LogOut className="h-5 w-5" style={{ color: "rgba(0,0,0,0.4)" }} />
+      <span className="text-[8px] font-oxanium tracking-widest" style={{ color: "rgba(0,0,0,0.4)" }}>
+        LOGOUT
+      </span>
+    </button>
+  );
+}
+
 export default function Sidebar({
   role,
   judgeName,
@@ -108,8 +128,8 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Track switcher (mentor only) */}
-        {role === "mentor" && <TrackSwitcher currentTrack={track} />}
+        {/* Track switcher (mentor + admin) */}
+        {(role === "mentor" || role === "admin") && <TrackSwitcher currentTrack={track} />}
 
         {/* Nav */}
         <nav className="flex-1 px-3 pb-4">
@@ -153,7 +173,7 @@ export default function Sidebar({
 
       {/* Mobile bottom nav bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-black/10 bg-white/95 backdrop-blur-sm px-2 py-2">
-        {navItems.slice(0, 5).map(({ href, Icon, label }) => {
+        {navItems.slice(0, 4).map(({ href, Icon, label }) => {
           const isActive = href === "/overview"
             ? pathname.startsWith("/overview")
             : pathname.startsWith(href);
@@ -170,6 +190,7 @@ export default function Sidebar({
             </Link>
           );
         })}
+        <MobileLogoutButton />
       </nav>
     </>
   );

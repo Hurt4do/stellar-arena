@@ -11,12 +11,14 @@ export default function ProjectsGridView({
   projects,
   scoredProjectIds,
   errorMessage,
+  defaultTrack,
 }: {
   projects: Project[];
   scoredProjectIds: string[];
   errorMessage?: string;
+  defaultTrack?: "genesis" | "scale" | null;
 }) {
-  const [filter, setFilter] = useState<TrackFilter>("all");
+  const [filter, setFilter] = useState<TrackFilter>(defaultTrack ?? "all");
 
   const scoredSet = new Set(scoredProjectIds);
 
@@ -94,7 +96,7 @@ export default function ProjectsGridView({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 overflow-visible">
           {filtered.map((p, idx) => (
             <div key={p.id} className="relative">
               {scoredSet.has(p.id) && (

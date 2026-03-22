@@ -1,12 +1,14 @@
 import { cookies } from "next/headers";
 import ProjectsGridView from "@/features/projects/ProjectsGridView";
-import { getProjects } from "@/lib/db/projects";
+import { getProjects, normalizeTrack } from "@/lib/db/projects";
 import { getJudgeScores } from "@/lib/db/scores";
-import { COOKIE_JUDGE_ID } from "@/lib/auth";
+import { COOKIE_JUDGE_ID, COOKIE_TRACK } from "@/lib/auth";
 import type { Project } from "@/types/dashboard";
 
 export default async function ProjectsPage() {
   const judgeId = cookies().get(COOKIE_JUDGE_ID)?.value ?? null;
+  const rawTrack = cookies().get(COOKIE_TRACK)?.value ?? null;
+  const defaultTrack = rawTrack as "genesis" | "scale" | null;
 
   let projects: Project[] = [];
   let scoredProjectIds: string[] = [];
@@ -14,12 +16,16 @@ export default async function ProjectsPage() {
 
   try {
     const data = await getProjects();
-    projects = data.map((p) => ({
-      ...p,
-      description: p.team_description ?? undefined,
-      team: p.team_members ?? undefined,
-      tags: p.track ? [p.track] : [],
-    }));
+    projects = data.map((p) => {
+      const normalized = normalizeTrack(p.track) ?? p.track;
+      return {
+        ...p,
+        track: normalized,
+        description: p.team_description ?? undefined,
+        team: p.team_members ?? undefined,
+        tags: normalized ? [normalized] : [],
+      };
+    });
   } catch (err) {
     errorMessage = String(err);
   }
@@ -43,6 +49,7 @@ export default async function ProjectsPage() {
       projects={projects}
       scoredProjectIds={scoredProjectIds}
       errorMessage={errorMessage}
+      defaultTrack={defaultTrack}
     />
   );
 }

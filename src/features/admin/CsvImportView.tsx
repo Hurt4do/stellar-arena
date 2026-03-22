@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, FileText, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { upsertProjects, type DbProject } from "@/lib/db/projects";
+import { upsertProjects, normalizeTrack, type DbProject } from "@/lib/db/projects";
 
 // DoraHacks CSV column headers → DB field mapping
 const COL_MAP: Record<string, keyof Omit<DbProject, "created_at">> = {
@@ -99,6 +99,10 @@ function mapRow(raw: Record<string, string>): Omit<DbProject, "created_at"> | nu
     } else {
       (mapped as Record<string, unknown>)[field] = val;
     }
+  }
+  // Normalize track: "Track 2: Stellar Genesis" → "Genesis", etc.
+  if (mapped.track) {
+    mapped.track = normalizeTrack(mapped.track as string);
   }
   return mapped as Omit<DbProject, "created_at">;
 }

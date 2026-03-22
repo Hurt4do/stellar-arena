@@ -16,6 +16,15 @@ export interface DbProject {
   created_at: string;
 }
 
+/** Normalize DoraHacks track names like "Track 2: Stellar Genesis" → "Genesis" */
+export function normalizeTrack(raw: string | null): string | null {
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+  if (lower.includes("genesis")) return "Genesis";
+  if (lower.includes("scale")) return "Scale";
+  return raw;
+}
+
 export async function getProjects(): Promise<DbProject[]> {
   const { data, error } = await supabase
     .from("projects")
