@@ -32,7 +32,6 @@ export default function EvaluationStepOneView({
 }) {
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [scores, setScores] = useState<number[]>(() => criteria.map(() => 0));
-  const [comments, setComments] = useState<string[]>(() => criteria.map(() => ""));
   const [pitchTags, setPitchTags] = useState<PitchTag[]>([]);
   const [finalComment, setFinalComment] = useState("");
   const [scaleOutcome, setScaleOutcome] = useState<ScaleOutcome | null>(null);
@@ -48,14 +47,6 @@ export default function EvaluationStepOneView({
     setScores((prev) => {
       const next = [...prev];
       next[idx] = newScore;
-      return next;
-    });
-  };
-
-  const updateComment = (idx: number, text: string) => {
-    setComments((prev) => {
-      const next = [...prev];
-      next[idx] = text;
       return next;
     });
   };
@@ -79,7 +70,6 @@ export default function EvaluationStepOneView({
         judge_id: judgeId,
         criterion_id: c.id,
         score: scores[i] ?? 0,
-        comments: comments[i] || undefined,
       }));
       await upsertScores(inputs);
       await upsertFeedback({
@@ -274,18 +264,6 @@ export default function EvaluationStepOneView({
                 </div>
               </div>
 
-              <div className="mt-5">
-                <div className="text-[11px] font-oxanium tracking-widest font-semibold text-neon-cyan mb-2">
-                  COMMENTS &amp; OBSERVATIONS
-                </div>
-                <textarea
-                  rows={3}
-                  value={comments[idx] ?? ""}
-                  onChange={(e) => updateComment(idx, e.target.value)}
-                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[13px] font-oxanium tracking-wider outline-none focus:ring-2 focus:ring-neon-cyan/30"
-                  placeholder="Optional notes for this criterion..."
-                />
-              </div>
             </div>
           </section>
         ))}

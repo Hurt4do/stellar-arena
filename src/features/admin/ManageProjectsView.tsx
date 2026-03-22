@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, AlertTriangle, Search, X } from "lucide-react";
+import { Trash2, AlertTriangle, Search, X, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DbProject } from "@/lib/db/projects";
 
@@ -90,6 +90,32 @@ export default function ManageProjectsView({ projects: initial }: { projects: Db
           </button>
         </div>
       )}
+
+      {/* Export scores */}
+      <div className="rounded-2xl border border-black/10 bg-white p-5">
+        <div className="text-[11px] font-oxanium tracking-widest font-semibold text-black/50 mb-3">
+          EXPORT SCORES
+        </div>
+        <p className="text-[12px] font-oxanium tracking-wider text-black/55 mb-4">
+          Download all evaluation scores and feedback as CSV. One row per judge per project.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/api/admin/export-scores?track=genesis"
+            className="inline-flex items-center gap-2 rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 px-4 py-2.5 text-[11px] font-oxanium tracking-widest font-semibold text-neon-cyan hover:bg-neon-cyan/10 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            GENESIS CSV
+          </a>
+          <a
+            href="/api/admin/export-scores?track=scale"
+            className="inline-flex items-center gap-2 rounded-xl border border-neon-purple/30 bg-neon-purple/5 px-4 py-2.5 text-[11px] font-oxanium tracking-widest font-semibold text-neon-purple hover:bg-neon-purple/10 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            SCALE CSV
+          </a>
+        </div>
+      </div>
 
       {/* Danger zone */}
       <div className="rounded-2xl border border-red-200 bg-red-50/50 p-5">

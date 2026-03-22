@@ -1,15 +1,25 @@
 import Link from "next/link";
 import type { DbProject } from "@/lib/db/projects";
+import type { DbScore } from "@/lib/db/scores";
+import type { DbRubricCriterion } from "@/lib/db/rubric";
 import { CheckCircle2, Clock } from "lucide-react";
+
+type FeedbackEntry = { final_comment: string | null; pitch_tags: string[] | null; outcome: string | null };
 
 export default function MyScoringView({
   projects,
   scoredProjectIds,
   judgeId,
+  scoreMap,
+  feedbackMap,
+  criteria,
 }: {
   projects: DbProject[];
   scoredProjectIds: Set<string>;
   judgeId: string | null;
+  scoreMap: Record<string, DbScore[]>;
+  feedbackMap: Record<string, FeedbackEntry>;
+  criteria: DbRubricCriterion[];
 }) {
   const evaluated = projects.filter((p) => scoredProjectIds.has(p.id));
   const pending = projects.filter((p) => !scoredProjectIds.has(p.id));
@@ -55,7 +65,14 @@ export default function MyScoringView({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {evaluated.map((p) => (
-              <ProjectCard key={p.id} project={p} evaluated={true} />
+              <ProjectCard
+                key={p.id}
+                project={p}
+                evaluated={true}
+                scores={scoreMap[p.id] ?? []}
+                feedback={feedbackMap[p.id]}
+                criteria={criteria}
+              />
             ))}
           </div>
         </section>
@@ -72,7 +89,24 @@ export default function MyScoringView({
   );
 }
 
-function ProjectCard({ project, evaluated }: { project: DbProject; evaluated: boolean }) {
+function ProjectCard({
+  project,
+  evaluated,
+  scores = [],
+  feedback,
+  criteria = [],
+}: {
+  project: DbProject;
+  evaluated: boolean;
+  scores?: DbScore[];
+  feedback?: FeedbackEntry;
+  criteria?: DbRubricCriterion[];
+}) {
+  // Compute total score
+  const maxTotal = criteria.reduce((a, c) => a + c.max_score, 0);
+  const rawTotal = criteria.reduce((a, c) => a + (scores.find((s) => s.criterion_id === c.id)?.score ?? 0), 0);
+  const totalPct = maxTotal > 0 ? Math.round((rawTotal / maxTotal) * 100) : 0;
+
   return (
     <div className={[
       "rounded-xl border bg-white p-4 flex flex-col gap-3 transition-all",
@@ -100,6 +134,73 @@ function ProjectCard({ project, evaluated }: { project: DbProject; evaluated: bo
         <p className="text-[11px] text-black/50 line-clamp-2 leading-relaxed">
           {project.team_description}
         </p>
+      )}
+
+      {/* Score details for evaluated projects */}
+      {evaluated && criteria.length > 0 && scores.length > 0 && (
+        <div className="rounded-xl border border-emerald-200 bg-white p-3 space-y-2">
+          {/* Total score */}
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-oxanium tracking-widest text-black/45">TOTAL SCORE</span>
+            <span className="text-[15px] font-oxanium font-semibold text-emerald-600">
+              {totalPct}<span className="text-[10px] text-black/35">/100</span>
+            </span>
+          </div>
+
+          {/* Per-criterion rows */}
+          <div className="space-y-1 pt-1 border-t border-black/5">
+            {criteria.map((c) => {
+              const s = scores.find((sc) => sc.criterion_id === c.id);
+              const score = s?.score ?? 0;
+              return (
+                <div key={c.id} className="flex items-center justify-between gap-2">
+                  <span className="text-[9px] font-oxanium tracking-widest text-black/45 truncate flex-1">
+                    {c.pillar_name}
+                  </span>
+                  <span className="text-[10px] font-oxanium font-semibold text-black/65 shrink-0">
+                    {score}<span className="text-black/30">/{c.max_score}</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Final comment */}
+          {feedback?.final_comment && (
+            <div className="pt-1 border-t border-black/5">
+              <div className="text-[9px] font-oxanium tracking-widest text-black/35 mb-0.5">OBSERVATIONS</div>
+              <p className="text-[10px] font-oxanium tracking-wider text-black/55 line-clamp-3 leading-relaxed">
+                {feedback.final_comment}
+              </p>
+            </div>
+          )}
+
+          {/* Pitch tags */}
+          {feedback?.pitch_tags && feedback.pitch_tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-1 border-t border-black/5">
+              {feedback.pitch_tags.map((tag) => (
+                <span key={tag} className="rounded-full bg-neon-cyan/10 px-2 py-0.5 text-[8px] font-oxanium tracking-widest text-neon-cyan font-semibold">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Scale outcome */}
+          {feedback?.outcome && (
+            <div className="pt-1 border-t border-black/5">
+              <span
+                className="inline-block rounded-full px-2 py-0.5 text-[8px] font-oxanium tracking-widest font-semibold"
+                style={{
+                  background: feedback.outcome === "INSTAWARD" ? "rgba(0,179,212,0.1)" : feedback.outcome === "SCF_BUILD" ? "rgba(179,92,255,0.1)" : "rgba(0,0,0,0.06)",
+                  color: feedback.outcome === "INSTAWARD" ? "#00B3D4" : feedback.outcome === "SCF_BUILD" ? "#B35CFF" : "rgba(0,0,0,0.5)",
+                }}
+              >
+                {feedback.outcome.replace("_", " ")}
+              </span>
+            </div>
+          )}
+        </div>
       )}
 
       <div className="mt-auto">
