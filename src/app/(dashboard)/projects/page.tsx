@@ -27,7 +27,12 @@ export default async function ProjectsPage() {
   if (judgeId && !errorMessage) {
     try {
       const scores = await getJudgeScores(judgeId);
-      scoredProjectIds = [...new Set(scores.map((s) => s.project_id))];
+      const seen = new Set<string>();
+      scoredProjectIds = scores.map((s) => s.project_id).filter((id) => {
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
     } catch {
       // Non-critical: scored badges just won't show
     }
