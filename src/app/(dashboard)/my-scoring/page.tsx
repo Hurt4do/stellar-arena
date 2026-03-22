@@ -9,11 +9,12 @@ export default async function MyScoringPage() {
   const judgeId = cookies().get(COOKIE_JUDGE_ID)?.value ?? null;
   const currentTrack = cookies().get(COOKIE_TRACK)?.value ?? null;
 
-  const [rawProjects, scores, feedback, criteria] = await Promise.all([
+  const [rawProjects, scores, feedback, genesisCriteria, scaleCriteria] = await Promise.all([
     getProjects().catch(() => []),
     judgeId ? getJudgeScores(judgeId).catch(() => []) : Promise.resolve([]),
     judgeId ? getJudgeFeedback(judgeId).catch(() => []) : Promise.resolve([]),
-    getRubricCriteria(currentTrack ?? "genesis").catch(() => []),
+    getRubricCriteria("genesis").catch(() => []),
+    getRubricCriteria("scale").catch(() => []),
   ]);
 
   const projects = rawProjects
@@ -34,6 +35,8 @@ export default async function MyScoringPage() {
   const feedbackMap: Record<string, { final_comment: string | null; pitch_tags: string[] | null; outcome: string | null }> = {};
   for (const f of feedback) feedbackMap[f.project_id] = f;
 
+  const criteriaByTrack = { genesis: genesisCriteria, scale: scaleCriteria };
+
   return (
     <MyScoringView
       projects={projects}
@@ -41,7 +44,7 @@ export default async function MyScoringPage() {
       judgeId={judgeId}
       scoreMap={scoreMap}
       feedbackMap={feedbackMap}
-      criteria={criteria}
+      criteriaByTrack={criteriaByTrack}
     />
   );
 }

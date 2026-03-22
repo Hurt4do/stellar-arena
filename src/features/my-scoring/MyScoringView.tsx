@@ -12,14 +12,14 @@ export default function MyScoringView({
   judgeId,
   scoreMap,
   feedbackMap,
-  criteria,
+  criteriaByTrack,
 }: {
   projects: DbProject[];
   scoredProjectIds: Set<string>;
   judgeId: string | null;
   scoreMap: Record<string, DbScore[]>;
   feedbackMap: Record<string, FeedbackEntry>;
-  criteria: DbRubricCriterion[];
+  criteriaByTrack: Record<string, DbRubricCriterion[]>;
 }) {
   const evaluated = projects.filter((p) => scoredProjectIds.has(p.id));
   const pending = projects.filter((p) => !scoredProjectIds.has(p.id));
@@ -71,7 +71,7 @@ export default function MyScoringView({
                 evaluated={true}
                 scores={scoreMap[p.id] ?? []}
                 feedback={feedbackMap[p.id]}
-                criteria={criteria}
+                criteria={criteriaByTrack[(p.track ?? "genesis").toLowerCase()] ?? []}
               />
             ))}
           </div>
@@ -102,10 +102,12 @@ function ProjectCard({
   feedback?: FeedbackEntry;
   criteria?: DbRubricCriterion[];
 }) {
-  // Compute total score
   const maxTotal = criteria.reduce((a, c) => a + c.max_score, 0);
   const rawTotal = criteria.reduce((a, c) => a + (scores.find((s) => s.criterion_id === c.id)?.score ?? 0), 0);
-  const totalPct = maxTotal > 0 ? Math.round((rawTotal / maxTotal) * 100) : 0;
+  const totalPct = maxTotal > 0 ? Math.round((rawTotal / maxTotal) * 100) : null;
+
+  const hasScores = scores.length > 0;
+  const hasFeedback = !!(feedback?.final_comment || (feedback?.pitch_tags?.length ?? 0) > 0 || feedback?.outcome);
 
   return (
     <div className={[
@@ -125,17 +127,16 @@ function ProjectCard({
             </p>
           )}
         </div>
-        {evaluated && maxTotal > 0 && (
+        {evaluated && totalPct !== null ? (
           <div className="shrink-0 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-center">
             <div className="text-[8px] font-oxanium tracking-widest text-black/35">TOTAL EVAL</div>
             <div className="text-[14px] font-oxanium font-semibold leading-tight text-emerald-600">
               {totalPct}<span className="text-[9px] text-black/30">/100</span>
             </div>
           </div>
-        )}
-        {evaluated && maxTotal === 0 && (
+        ) : evaluated ? (
           <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-        )}
+        ) : null}
       </div>
 
       {project.team_description && (
@@ -144,30 +145,32 @@ function ProjectCard({
         </p>
       )}
 
-      {/* Score details for evaluated projects */}
-      {evaluated && criteria.length > 0 && scores.length > 0 && (
+      {/* Evaluation details — show whenever scores or feedback exist */}
+      {evaluated && (hasScores || hasFeedback) && (
         <div className="rounded-xl border border-emerald-200 bg-white p-3 space-y-2">
-          {/* Per-criterion rows */}
-          <div className="space-y-1">
-            {criteria.map((c) => {
-              const s = scores.find((sc) => sc.criterion_id === c.id);
-              const score = s?.score ?? 0;
-              return (
-                <div key={c.id} className="flex items-center justify-between gap-2">
-                  <span className="text-[9px] font-oxanium tracking-widest text-black/45 truncate flex-1">
-                    {c.pillar_name}
-                  </span>
-                  <span className="text-[10px] font-oxanium font-semibold text-black/65 shrink-0">
-                    {score}<span className="text-black/30">/{c.max_score}</span>
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+
+          {/* Per-criterion scores (needs criteria for pillar names) */}
+          {hasScores && criteria.length > 0 && (
+            <div className="space-y-1">
+              {criteria.map((c) => {
+                const score = scores.find((s) => s.criterion_id === c.id)?.score ?? 0;
+                return (
+                  <div key={c.id} className="flex items-center justify-between gap-2">
+                    <span className="text-[9px] font-oxanium tracking-widest text-black/45 truncate flex-1">
+                      {c.pillar_name}
+                    </span>
+                    <span className="text-[10px] font-oxanium font-semibold text-black/65 shrink-0">
+                      {score}<span className="text-black/30">/{c.max_score}</span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Final comment */}
           {feedback?.final_comment && (
-            <div className="pt-1 border-t border-black/5">
+            <div className={criteria.length > 0 && hasScores ? "pt-1 border-t border-black/5" : ""}>
               <div className="text-[9px] font-oxanium tracking-widest text-black/35 mb-0.5">OBSERVATIONS</div>
               <p className="text-[10px] font-oxanium tracking-wider text-black/55 line-clamp-3 leading-relaxed">
                 {feedback.final_comment}
