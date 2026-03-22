@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Eye, Rocket, Sparkles, TrendingUp, Award, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Eye, ExternalLink, Rocket, Sparkles, TrendingUp, Award, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -10,6 +10,7 @@ import logo from "@/app/public/BAF1.png";
 import { upsertScores } from "@/lib/db/scores";
 import { upsertFeedback } from "@/lib/db/scores";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
+import type { DbProject } from "@/lib/db/projects";
 
 function stageClass(isVisible: boolean) {
   return cn(
@@ -27,12 +28,14 @@ export default function EvaluationStepOneView({
   track,
   criteria,
   judgeId,
+  project,
 }: {
   projectId: string;
   projectName: string;
   track: string;
   criteria: DbRubricCriterion[];
   judgeId: string | null;
+  project: DbProject | null;
 }) {
   const [stage, setStage] = useState(0);
   const [blockIndex, setBlockIndex] = useState(0);
@@ -382,6 +385,71 @@ export default function EvaluationStepOneView({
         </span>
         <span className="text-[11px] font-oxanium tracking-widest text-black/40">{projectName}</span>
       </div>
+
+      {/* Project info from DoraHacks */}
+      {project && (
+        <section className="rounded-2xl border border-black/10 bg-white p-4 sm:p-6">
+          <div className="text-[11px] font-oxanium tracking-widest text-black/45 mb-3">PROJECT INFORMATION</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+            {project.team_members && (
+              <div>
+                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">TEAM MEMBERS</div>
+                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.team_members}</div>
+              </div>
+            )}
+            {project.team_description && (
+              <div>
+                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">TEAM DESCRIPTION</div>
+                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.team_description}</div>
+              </div>
+            )}
+            {project.bounties && (
+              <div>
+                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">BOUNTIES</div>
+                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.bounties}</div>
+              </div>
+            )}
+            {project.track && (
+              <div>
+                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">TRACK</div>
+                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.track}</div>
+              </div>
+            )}
+            {project.review_status && (
+              <div>
+                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">REVIEW STATUS</div>
+                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.review_status}</div>
+              </div>
+            )}
+            {project.submission_time && (
+              <div>
+                <div className="text-[9px] font-oxanium tracking-widest text-black/40 mb-0.5">SUBMITTED</div>
+                <div className="text-[12px] font-oxanium tracking-wider text-black/75">{project.submission_time}</div>
+              </div>
+            )}
+          </div>
+          {/* Links */}
+          {(project.profile_url || project.demo_link || project.github) && (
+            <div className="mt-3 pt-3 border-t border-black/5 flex flex-wrap gap-3">
+              {project.profile_url && (
+                <a href={project.profile_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-[10px] font-oxanium tracking-widest text-neon-cyan hover:bg-neon-cyan/5 transition-colors">
+                  <ExternalLink className="h-3 w-3" /> DORAHACKS PROFILE
+                </a>
+              )}
+              {project.demo_link && (
+                <a href={project.demo_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-[10px] font-oxanium tracking-widest text-neon-cyan hover:bg-neon-cyan/5 transition-colors">
+                  <ExternalLink className="h-3 w-3" /> DEMO
+                </a>
+              )}
+              {project.github && (
+                <a href={project.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-[10px] font-oxanium tracking-widest text-neon-cyan hover:bg-neon-cyan/5 transition-colors">
+                  <ExternalLink className="h-3 w-3" /> GITHUB
+                </a>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="grid grid-cols-1 gap-3 md:gap-4">
         <section className={cn("rounded-2xl border border-black/10 bg-white p-4 sm:p-6 md:p-8", stageClass(stage >= 1))}>

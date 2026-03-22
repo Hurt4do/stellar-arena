@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import EvaluationStepOneView from "@/features/evaluation/EvaluationStepOneView";
 import { getProject, normalizeTrack } from "@/lib/db/projects";
+import type { DbProject } from "@/lib/db/projects";
 import { getRubricCriteria } from "@/lib/db/rubric";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
 import { COOKIE_JUDGE_ID } from "@/lib/auth";
@@ -27,6 +28,7 @@ export default async function EvaluationStepOnePage({
       track={track}
       criteria={criteria}
       judgeId={judgeId}
+      project={project}
     />
   );
 }
