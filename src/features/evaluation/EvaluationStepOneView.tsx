@@ -10,8 +10,6 @@ import logo from "@/app/public/BAF1.png";
 import { upsertScores } from "@/lib/db/scores";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
 
-const STORAGE_KEY = "baf_judge_id";
-
 function stageClass(isVisible: boolean) {
   return cn(
     "transition-all duration-500 ease-out",
@@ -26,11 +24,13 @@ export default function EvaluationStepOneView({
   projectName,
   track,
   criteria,
+  judgeId,
 }: {
   projectId: string;
   projectName: string;
   track: string;
   criteria: DbRubricCriterion[];
+  judgeId: string | null;
 }) {
   const [stage, setStage] = useState(0);
   const [blockIndex, setBlockIndex] = useState(0);
@@ -85,9 +85,8 @@ export default function EvaluationStepOneView({
   };
 
   const handleSubmit = async () => {
-    const judgeId = localStorage.getItem(STORAGE_KEY);
     if (!judgeId) {
-      setSubmitError("No judge selected. Please select your identity from the top bar.");
+      setSubmitError("No judge ID found. Please log out and log in again as a Mentor.");
       return;
     }
     setSubmitting(true);

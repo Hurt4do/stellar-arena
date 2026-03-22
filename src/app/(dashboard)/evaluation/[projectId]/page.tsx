@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import EvaluationStepOneView from "@/features/evaluation/EvaluationStepOneView";
 import { getProject } from "@/lib/db/projects";
 import { getRubricCriteria } from "@/lib/db/rubric";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
+import { COOKIE_JUDGE_ID } from "@/lib/auth";
 
 export default async function EvaluationStepOnePage({
   params,
@@ -10,6 +12,7 @@ export default async function EvaluationStepOnePage({
 }) {
   const project = await getProject(params.projectId);
   const track = project?.track ?? "Genesis";
+  const judgeId = cookies().get(COOKIE_JUDGE_ID)?.value ?? null;
   let criteria: DbRubricCriterion[] = [];
   try {
     criteria = await getRubricCriteria(track);
@@ -23,6 +26,7 @@ export default async function EvaluationStepOnePage({
       projectName={project?.name ?? params.projectId}
       track={track}
       criteria={criteria}
+      judgeId={judgeId}
     />
   );
 }
