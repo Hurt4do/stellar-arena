@@ -13,8 +13,8 @@ export default async function MyScoringPage() {
     getProjects().catch(() => []),
     judgeId ? getJudgeScores(judgeId).catch(() => []) : Promise.resolve([]),
     judgeId ? getJudgeFeedback(judgeId).catch(() => []) : Promise.resolve([]),
-    getRubricCriteria("genesis").catch(() => []),
-    getRubricCriteria("scale").catch(() => []),
+    getRubricCriteria("Genesis").catch(() => []),
+    getRubricCriteria("Scale").catch(() => []),
   ]);
 
   const projects = rawProjects
@@ -35,7 +35,7 @@ export default async function MyScoringPage() {
   const feedbackMap: Record<string, { final_comment: string | null; pitch_tags: string[] | null; outcome: string | null }> = {};
   for (const f of feedback) feedbackMap[f.project_id] = f;
 
-  const criteriaByTrack = { genesis: genesisCriteria, scale: scaleCriteria };
+  const criteriaByTrack: Record<string, typeof genesisCriteria> = { Genesis: genesisCriteria, Scale: scaleCriteria };
 
   return (
     <MyScoringView

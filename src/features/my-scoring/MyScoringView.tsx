@@ -71,7 +71,7 @@ export default function MyScoringView({
                 evaluated={true}
                 scores={scoreMap[p.id] ?? []}
                 feedback={feedbackMap[p.id]}
-                criteria={criteriaByTrack[(p.track ?? "genesis").toLowerCase()] ?? []}
+                criteria={criteriaByTrack[p.track ?? "Genesis"] ?? []}
               />
             ))}
           </div>
