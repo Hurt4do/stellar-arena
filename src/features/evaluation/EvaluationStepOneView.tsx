@@ -216,7 +216,7 @@ export default function EvaluationStepOneView({
             <div className="mt-3 pt-3 border-t border-black/5 flex flex-wrap gap-3">
               {project.profile_url && (
                 <a href={project.profile_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-[10px] font-oxanium tracking-widest text-neon-cyan hover:bg-neon-cyan/5 transition-colors">
-                  <ExternalLink className="h-3 w-3" /> DORAHACKS PROFILE
+                  <ExternalLink className="h-3 w-3" /> HACK PAGE
                 </a>
               )}
               {project.demo_link && (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Github } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/types/dashboard";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,20 @@ export default function ProjectSummaryCard({
           </Badge>
         ))}
       </div>
+
+      {project.github && (
+        <div className="mt-3 pt-3 border-t border-black/5">
+          <a
+            href={project.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 text-[10px] font-oxanium tracking-widest text-black/45 hover:text-neon-cyan transition-colors"
+          >
+            <Github className="h-3 w-3" /> GITHUB
+          </a>
+        </div>
+      )}
     </Link>
   );
 }

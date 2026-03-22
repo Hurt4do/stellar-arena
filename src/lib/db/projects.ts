@@ -13,6 +13,25 @@ export interface DbProject {
   review_status: string | null;
   submission_time: string | null;
   last_updated: string | null;
+  // Extended CSV fields
+  countries: string | null;
+  scf_track_choice: string | null;
+  budget_usd: string | null;
+  score_overall: string | null;
+  score_narrative: string | null;
+  score_technical: string | null;
+  score_feasibility: string | null;
+  score_traction: string | null;
+  website: string | null;
+  twitter: string | null;
+  video_pitch: string | null;
+  pitch_deck: string | null;
+  docs_url: string | null;
+  architecture_url: string | null;
+  problem: string | null;
+  solution: string | null;
+  key_integrations: string | null;
+  reviewer_feedback: string | null;
   created_at: string;
 }
 
