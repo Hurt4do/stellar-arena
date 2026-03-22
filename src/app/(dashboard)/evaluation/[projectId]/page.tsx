@@ -3,6 +3,7 @@ import EvaluationStepOneView from "@/features/evaluation/EvaluationStepOneView";
 import { getProject, normalizeTrack } from "@/lib/db/projects";
 import { getRubricCriteria } from "@/lib/db/rubric";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
+import { getJudgeProjectScores, getJudgeProjectFeedback } from "@/lib/db/scores";
 import { COOKIE_JUDGE_ID } from "@/lib/auth";
 
 export default async function EvaluationStepOnePage({
@@ -10,15 +11,21 @@ export default async function EvaluationStepOnePage({
 }: {
   params: { projectId: string };
 }) {
-  const project = await getProject(params.projectId);
+  const project = await getProject(params.projectId).catch(() => null);
   const track = normalizeTrack(project?.track ?? null) ?? "Genesis";
   const judgeId = cookies().get(COOKIE_JUDGE_ID)?.value ?? null;
+
   let criteria: DbRubricCriterion[] = [];
   try {
     criteria = await getRubricCriteria(track);
   } catch {
     // Supabase not configured — view will show an error state
   }
+
+  const [existingScores, existingFeedback] = await Promise.all([
+    judgeId ? getJudgeProjectScores(judgeId, params.projectId).catch(() => []) : Promise.resolve([]),
+    judgeId ? getJudgeProjectFeedback(judgeId, params.projectId).catch(() => null) : Promise.resolve(null),
+  ]);
 
   return (
     <EvaluationStepOneView
@@ -28,6 +35,8 @@ export default async function EvaluationStepOnePage({
       criteria={criteria}
       judgeId={judgeId}
       project={project}
+      existingScores={existingScores}
+      existingFeedback={existingFeedback}
     />
   );
 }

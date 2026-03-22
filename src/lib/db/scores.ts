@@ -77,6 +77,19 @@ export async function upsertScores(inputs: UpsertScoreInput[]): Promise<void> {
   if (error) throw error;
 }
 
+export async function getJudgeProjectFeedback(judgeId: string, projectId: string): Promise<
+  { final_comment: string | null; pitch_tags: string[] | null; outcome: string | null } | null
+> {
+  const { data, error } = await supabase
+    .from("project_feedback")
+    .select("final_comment, pitch_tags, outcome")
+    .eq("judge_id", judgeId)
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function getJudgeFeedback(judgeId: string): Promise<
   { project_id: string; final_comment: string | null; pitch_tags: string[] | null; outcome: string | null }[]
 > {

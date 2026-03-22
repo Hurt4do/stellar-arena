@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import logo from "@/app/public/BAF1.png";
-import { upsertScores } from "@/lib/db/scores";
-import { upsertFeedback } from "@/lib/db/scores";
+import { upsertScores, upsertFeedback, type DbScore } from "@/lib/db/scores";
 import type { DbRubricCriterion } from "@/lib/db/rubric";
 import type { DbProject } from "@/lib/db/projects";
 
@@ -22,6 +21,8 @@ export default function EvaluationStepOneView({
   criteria,
   judgeId,
   project,
+  existingScores = [],
+  existingFeedback = null,
 }: {
   projectId: string;
   projectName: string;
@@ -29,12 +30,20 @@ export default function EvaluationStepOneView({
   criteria: DbRubricCriterion[];
   judgeId: string | null;
   project: DbProject | null;
+  existingScores?: DbScore[];
+  existingFeedback?: { final_comment: string | null; pitch_tags: string[] | null; outcome: string | null } | null;
 }) {
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
-  const [scores, setScores] = useState<number[]>(() => criteria.map(() => 0));
-  const [pitchTags, setPitchTags] = useState<PitchTag[]>([]);
-  const [finalComment, setFinalComment] = useState("");
-  const [scaleOutcome, setScaleOutcome] = useState<ScaleOutcome | null>(null);
+  const [scores, setScores] = useState<number[]>(() =>
+    criteria.map((c) => existingScores.find((s) => s.criterion_id === c.id)?.score ?? 0)
+  );
+  const [pitchTags, setPitchTags] = useState<PitchTag[]>(
+    () => (existingFeedback?.pitch_tags ?? []) as PitchTag[]
+  );
+  const [finalComment, setFinalComment] = useState(existingFeedback?.final_comment ?? "");
+  const [scaleOutcome, setScaleOutcome] = useState<ScaleOutcome | null>(
+    (existingFeedback?.outcome as ScaleOutcome | null) ?? null
+  );
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
