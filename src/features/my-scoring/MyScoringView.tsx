@@ -125,7 +125,15 @@ function ProjectCard({
             </p>
           )}
         </div>
-        {evaluated && (
+        {evaluated && maxTotal > 0 && (
+          <div className="shrink-0 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-center">
+            <div className="text-[8px] font-oxanium tracking-widest text-black/35">TOTAL EVAL</div>
+            <div className="text-[14px] font-oxanium font-semibold leading-tight text-emerald-600">
+              {totalPct}<span className="text-[9px] text-black/30">/100</span>
+            </div>
+          </div>
+        )}
+        {evaluated && maxTotal === 0 && (
           <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
         )}
       </div>
@@ -139,16 +147,8 @@ function ProjectCard({
       {/* Score details for evaluated projects */}
       {evaluated && criteria.length > 0 && scores.length > 0 && (
         <div className="rounded-xl border border-emerald-200 bg-white p-3 space-y-2">
-          {/* Total score */}
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-oxanium tracking-widest text-black/45">TOTAL SCORE</span>
-            <span className="text-[15px] font-oxanium font-semibold text-emerald-600">
-              {totalPct}<span className="text-[10px] text-black/35">/100</span>
-            </span>
-          </div>
-
           {/* Per-criterion rows */}
-          <div className="space-y-1 pt-1 border-t border-black/5">
+          <div className="space-y-1">
             {criteria.map((c) => {
               const s = scores.find((sc) => sc.criterion_id === c.id);
               const score = s?.score ?? 0;
