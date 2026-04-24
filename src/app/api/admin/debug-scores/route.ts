@@ -9,15 +9,17 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const [
-    { data: scores },
-    { data: criteria },
-    { data: feedback },
-  ] = await Promise.all([
-    supabase.from("scores").select("project_id, judge_id, criterion_id, score"),
-    supabase.from("rubric_criteria").select("id, track, pillar_name, order_index, max_score"),
-    supabase.from("project_feedback").select("project_id, judge_id"),
-  ]);
+  const { data: scores } = await supabase
+    .from("scores")
+    .select("project_id, judge_id, criterion_id, score");
+
+  const { data: criteria } = await supabase
+    .from("rubric_criteria")
+    .select("id, track, pillar_name, order_index, max_score");
+
+  const { data: feedback } = await supabase
+    .from("project_feedback")
+    .select("project_id, judge_id");
 
   const criteriaIds = new Set((criteria ?? []).map((c) => c.id));
   const scoreCriterionIds = [...new Set((scores ?? []).map((s) => s.criterion_id))];
