@@ -114,6 +114,13 @@ export default function ManageProjectsView({ projects: initial }: { projects: Db
             <Download className="h-3.5 w-3.5" />
             SCALE CSV
           </a>
+          <a
+            href="/api/admin/export-projects"
+            className="inline-flex items-center gap-2 rounded-xl border border-black/15 bg-black/5 px-4 py-2.5 text-[11px] font-oxanium tracking-widest font-semibold text-black/60 hover:bg-black/10 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            PROJECTS CSV
+          </a>
         </div>
       </div>
 
