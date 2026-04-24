@@ -21,10 +21,15 @@ export async function GET() {
     .from("project_feedback")
     .select("project_id, judge_id");
 
-  const criteriaIds = new Set((criteria ?? []).map((c) => c.id));
-  const scoreCriterionIds = [...new Set((scores ?? []).map((s) => s.criterion_id))];
-  const matchedIds = scoreCriterionIds.filter((id) => criteriaIds.has(id));
-  const unmatchedIds = scoreCriterionIds.filter((id) => !criteriaIds.has(id));
+  const criteriaIdSet: Record<string, boolean> = {};
+  for (const c of criteria ?? []) criteriaIdSet[c.id] = true;
+
+  const scoreCriterionIdSet: Record<string, boolean> = {};
+  for (const s of scores ?? []) scoreCriterionIdSet[s.criterion_id] = true;
+  const scoreCriterionIds = Object.keys(scoreCriterionIdSet);
+
+  const matchedIds = scoreCriterionIds.filter((id) => criteriaIdSet[id]);
+  const unmatchedIds = scoreCriterionIds.filter((id) => !criteriaIdSet[id]);
 
   return NextResponse.json({
     scores_count: scores?.length ?? 0,
