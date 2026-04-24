@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export interface UpsertFeedbackInput {
   project_id: string;
@@ -8,6 +9,7 @@ export interface UpsertFeedbackInput {
   outcome?: string;
 }
 
+// Writes use anon key (called from client components in the browser)
 export async function upsertFeedback(input: UpsertFeedbackInput): Promise<void> {
   const { error } = await supabase
     .from("project_feedback")
@@ -35,8 +37,9 @@ export interface UpsertScoreInput {
   pitch_tags?: string[];
 }
 
+// Reads use service-role key (server-side only) to bypass RLS
 export async function getProjectScores(projectId: string): Promise<DbScore[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("scores")
     .select("*")
     .eq("project_id", projectId);
@@ -45,7 +48,7 @@ export async function getProjectScores(projectId: string): Promise<DbScore[]> {
 }
 
 export async function getJudgeScores(judgeId: string): Promise<DbScore[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("scores")
     .select("*")
     .eq("judge_id", judgeId);
@@ -54,7 +57,7 @@ export async function getJudgeScores(judgeId: string): Promise<DbScore[]> {
 }
 
 export async function getJudgeProjectScores(judgeId: string, projectId: string): Promise<DbScore[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("scores")
     .select("*")
     .eq("judge_id", judgeId)
@@ -63,6 +66,7 @@ export async function getJudgeProjectScores(judgeId: string, projectId: string):
   return data ?? [];
 }
 
+// Writes use anon key (called from client components in the browser)
 export async function upsertScore(input: UpsertScoreInput): Promise<void> {
   const { error } = await supabase
     .from("scores")
@@ -89,7 +93,7 @@ export async function upsertScores(inputs: UpsertScoreInput[]): Promise<void> {
 export async function getJudgeProjectFeedback(judgeId: string, projectId: string): Promise<
   { final_comment: string | null; pitch_tags: string[] | null; outcome: string | null } | null
 > {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("project_feedback")
     .select("final_comment, pitch_tags, outcome")
     .eq("judge_id", judgeId)
@@ -102,7 +106,7 @@ export async function getJudgeProjectFeedback(judgeId: string, projectId: string
 export async function getJudgeFeedback(judgeId: string): Promise<
   { project_id: string; final_comment: string | null; pitch_tags: string[] | null; outcome: string | null }[]
 > {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("project_feedback")
     .select("project_id, final_comment, pitch_tags, outcome")
     .eq("judge_id", judgeId);
@@ -126,7 +130,7 @@ export async function getAllScoresForExport(
   track: string
 ): Promise<{ criteria: { id: string; pillar_name: string; max_score: number; order_index: number }[]; rows: ScoreExportRow[] }> {
   // 1. Projects for this track
-  const { data: allProjects, error: projErr } = await supabase
+  const { data: allProjects, error: projErr } = await supabaseAdmin
     .from("projects")
     .select("id, name, track");
   if (projErr) throw projErr;
@@ -140,7 +144,7 @@ export async function getAllScoresForExport(
   if (projectIds.length === 0) return { criteria: [], rows: [] };
 
   // 2. Scores for these projects
-  const { data: scores, error: scoresErr } = await supabase
+  const { data: scores, error: scoresErr } = await supabaseAdmin
     .from("scores")
     .select("project_id, judge_id, criterion_id, score, submitted_at")
     .in("project_id", projectIds);
@@ -148,15 +152,13 @@ export async function getAllScoresForExport(
 
   // 3. Determine which criterion IDs are actually used in these scores,
   //    then fetch exactly those rows from rubric_criteria.
-  //    This avoids the duplicate-row ambiguity: we look up the specific IDs
-  //    that were referenced when evaluations were submitted.
   const usedCriterionIdMap: Record<string, true> = {};
   for (const s of scores ?? []) usedCriterionIdMap[s.criterion_id] = true;
   const usedIds = Object.keys(usedCriterionIdMap);
 
   let criteria: { id: string; pillar_name: string; max_score: number; order_index: number }[] = [];
   if (usedIds.length > 0) {
-    const { data: rawCriteria, error: critErr } = await supabase
+    const { data: rawCriteria, error: critErr } = await supabaseAdmin
       .from("rubric_criteria")
       .select("id, pillar_name, max_score, order_index")
       .in("id", usedIds)
@@ -164,9 +166,8 @@ export async function getAllScoresForExport(
     if (critErr) throw critErr;
     criteria = rawCriteria ?? [];
   } else {
-    // Fallback: no scores yet — use rubric definition for column headers
     const normalizedTrack = track.charAt(0).toUpperCase() + track.slice(1);
-    const { data: rawCriteria } = await supabase
+    const { data: rawCriteria } = await supabaseAdmin
       .from("rubric_criteria")
       .select("id, pillar_name, max_score, order_index")
       .eq("track", normalizedTrack)
@@ -180,13 +181,13 @@ export async function getAllScoresForExport(
   }
 
   // 4. Judges
-  const { data: judges, error: judgeErr } = await supabase.from("judges").select("id, name");
+  const { data: judges, error: judgeErr } = await supabaseAdmin.from("judges").select("id, name");
   if (judgeErr) throw judgeErr;
   const judgeMap: Record<string, string> = {};
   for (const j of judges ?? []) judgeMap[j.id] = j.name;
 
   // 5. Feedback for these projects
-  const { data: feedback, error: feedErr } = await supabase
+  const { data: feedback, error: feedErr } = await supabaseAdmin
     .from("project_feedback")
     .select("project_id, judge_id, final_comment, pitch_tags, outcome")
     .in("project_id", projectIds);
@@ -228,11 +229,9 @@ export async function getAllScoresForExport(
 
 /**
  * Returns the number of unique judges who evaluated each project.
- * Reads from project_feedback (one row per project+judge, upsert-guaranteed)
- * which is more reliably readable than the scores table.
  */
 export async function getProjectEvalCounts(): Promise<Record<string, number>> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("project_feedback")
     .select("project_id, judge_id");
   if (error) throw error;
@@ -244,17 +243,16 @@ export async function getProjectEvalCounts(): Promise<Record<string, number>> {
   return counts;
 }
 
-// Returns { projectId -> averageScore (0-100) } across all judges
+// Returns avg score (0-100) per project across all judges
 export async function getLeaderboardScores(): Promise<
   { project_id: string; avg_score: number; judge_count: number }[]
 > {
-  // Fetch all scores with their rubric criteria for weighting
-  const { data: scores, error: scoresErr } = await supabase
+  const { data: scores, error: scoresErr } = await supabaseAdmin
     .from("scores")
     .select("project_id, judge_id, criterion_id, score");
   if (scoresErr) throw scoresErr;
 
-  const { data: criteria, error: critErr } = await supabase
+  const { data: criteria, error: critErr } = await supabaseAdmin
     .from("rubric_criteria")
     .select("id, max_score");
   if (critErr) throw critErr;
@@ -264,7 +262,6 @@ export async function getLeaderboardScores(): Promise<
   const maxMap: Record<string, number> = {};
   for (const c of criteria) maxMap[c.id] = c.max_score;
 
-  // Group by project + judge, compute weighted total per submission
   type Submission = { raw: number; max: number };
   const byProjJudge: Record<string, Record<string, Submission>> = {};
 
@@ -281,8 +278,7 @@ export async function getLeaderboardScores(): Promise<
     const judgeScores = Object.values(judges).map(({ raw, max }) =>
       max > 0 ? (raw / max) * 100 : 0
     );
-    const avg_score =
-      judgeScores.reduce((a, b) => a + b, 0) / judgeScores.length;
+    const avg_score = judgeScores.reduce((a, b) => a + b, 0) / judgeScores.length;
     return {
       project_id,
       avg_score: Math.round(avg_score * 10) / 10,
