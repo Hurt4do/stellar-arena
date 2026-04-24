@@ -22,12 +22,19 @@ export default async function LeaderboardPage() {
       trackMap[p.id] = p.track ?? "Unknown";
     }
 
-    // Build avg score map from leaderboard (may be empty if scores table unreadable)
+    // Build avg score map and judge_count from leaderboard scores (from scores table)
     const avgMap: Record<string, number> = {};
-    for (const s of leaderboardScores) avgMap[s.project_id] = s.avg_score;
+    const judgeCountMap: Record<string, number> = {};
+    for (const s of leaderboardScores) {
+      avgMap[s.project_id] = s.avg_score;
+      judgeCountMap[s.project_id] = s.judge_count;
+    }
 
-    // Show all projects that have at least one evaluation (from project_feedback)
-    const evaluatedIds = Object.keys(evalCounts).filter((id) => evalCounts[id] > 0);
+    // Merge: any project with scores OR feedback counts as evaluated
+    const allEvaluatedIds: Record<string, true> = {};
+    for (const id of Object.keys(evalCounts)) if (evalCounts[id] > 0) allEvaluatedIds[id] = true;
+    for (const id of Object.keys(avgMap)) allEvaluatedIds[id] = true;
+    const evaluatedIds = Object.keys(allEvaluatedIds);
 
     rows = evaluatedIds
       .map((id) => ({

@@ -116,24 +116,7 @@ export interface ScoreExportRow {
 export async function getAllScoresForExport(
   track: string
 ): Promise<{ criteria: { id: string; pillar_name: string; max_score: number; order_index: number }[]; rows: ScoreExportRow[] }> {
-  // Normalize track to match DB casing ("genesis" → "Genesis", "scale" → "Scale")
-  const normalizedTrack = track.charAt(0).toUpperCase() + track.slice(1);
-
-  // 1. Rubric criteria for the track (deduped by order_index)
-  const { data: rawCriteria, error: critErr } = await supabase
-    .from("rubric_criteria")
-    .select("id, pillar_name, max_score, order_index")
-    .eq("track", normalizedTrack)
-    .order("order_index");
-  if (critErr) throw critErr;
-  const seen = new Set<number>();
-  const criteria = (rawCriteria ?? []).filter((c) => {
-    if (seen.has(c.order_index)) return false;
-    seen.add(c.order_index);
-    return true;
-  });
-
-  // 2. All projects (filter to track in JS since raw values vary)
+  // 1. Projects for this track
   const { data: allProjects, error: projErr } = await supabase
     .from("projects")
     .select("id, name, track");
@@ -145,20 +128,53 @@ export async function getAllScoresForExport(
   const projectMap: Record<string, { name: string; track: string }> = {};
   for (const p of trackProjects) projectMap[p.id] = { name: p.name, track: p.track ?? "" };
 
-  if (projectIds.length === 0) return { criteria, rows: [] };
+  if (projectIds.length === 0) return { criteria: [], rows: [] };
 
-  // 3. Judges
-  const { data: judges, error: judgeErr } = await supabase.from("judges").select("id, name");
-  if (judgeErr) throw judgeErr;
-  const judgeMap: Record<string, string> = {};
-  for (const j of judges ?? []) judgeMap[j.id] = j.name;
-
-  // 4. Scores for these projects
+  // 2. Scores for these projects
   const { data: scores, error: scoresErr } = await supabase
     .from("scores")
     .select("project_id, judge_id, criterion_id, score, submitted_at")
     .in("project_id", projectIds);
   if (scoresErr) throw scoresErr;
+
+  // 3. Determine which criterion IDs are actually used in these scores,
+  //    then fetch exactly those rows from rubric_criteria.
+  //    This avoids the duplicate-row ambiguity: we look up the specific IDs
+  //    that were referenced when evaluations were submitted.
+  const usedCriterionIdMap: Record<string, true> = {};
+  for (const s of scores ?? []) usedCriterionIdMap[s.criterion_id] = true;
+  const usedIds = Object.keys(usedCriterionIdMap);
+
+  let criteria: { id: string; pillar_name: string; max_score: number; order_index: number }[] = [];
+  if (usedIds.length > 0) {
+    const { data: rawCriteria, error: critErr } = await supabase
+      .from("rubric_criteria")
+      .select("id, pillar_name, max_score, order_index")
+      .in("id", usedIds)
+      .order("order_index");
+    if (critErr) throw critErr;
+    criteria = rawCriteria ?? [];
+  } else {
+    // Fallback: no scores yet — use rubric definition for column headers
+    const normalizedTrack = track.charAt(0).toUpperCase() + track.slice(1);
+    const { data: rawCriteria } = await supabase
+      .from("rubric_criteria")
+      .select("id, pillar_name, max_score, order_index")
+      .eq("track", normalizedTrack)
+      .order("order_index");
+    const seen: Record<number, true> = {};
+    criteria = (rawCriteria ?? []).filter((c) => {
+      if (seen[c.order_index]) return false;
+      seen[c.order_index] = true;
+      return true;
+    });
+  }
+
+  // 4. Judges
+  const { data: judges, error: judgeErr } = await supabase.from("judges").select("id, name");
+  if (judgeErr) throw judgeErr;
+  const judgeMap: Record<string, string> = {};
+  for (const j of judges ?? []) judgeMap[j.id] = j.name;
 
   // 5. Feedback for these projects
   const { data: feedback, error: feedErr } = await supabase
