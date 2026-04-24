@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import ProjectsGridView from "@/features/projects/ProjectsGridView";
 import { getProjects, normalizeTrack } from "@/lib/db/projects";

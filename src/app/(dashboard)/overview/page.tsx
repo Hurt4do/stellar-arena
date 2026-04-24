@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import OverviewView from "@/features/overview/OverviewView";
 import { COOKIE_TRACK } from "@/lib/auth";
