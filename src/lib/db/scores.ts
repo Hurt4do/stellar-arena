@@ -116,11 +116,14 @@ export interface ScoreExportRow {
 export async function getAllScoresForExport(
   track: string
 ): Promise<{ criteria: { id: string; pillar_name: string; max_score: number; order_index: number }[]; rows: ScoreExportRow[] }> {
+  // Normalize track to match DB casing ("genesis" → "Genesis", "scale" → "Scale")
+  const normalizedTrack = track.charAt(0).toUpperCase() + track.slice(1);
+
   // 1. Rubric criteria for the track (deduped by order_index)
   const { data: rawCriteria, error: critErr } = await supabase
     .from("rubric_criteria")
     .select("id, pillar_name, max_score, order_index")
-    .eq("track", track)
+    .eq("track", normalizedTrack)
     .order("order_index");
   if (critErr) throw critErr;
   const seen = new Set<number>();
