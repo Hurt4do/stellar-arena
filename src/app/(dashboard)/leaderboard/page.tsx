@@ -11,7 +11,7 @@ export default async function LeaderboardPage() {
   try {
     const [projects, leaderboardScores, evalCounts] = await Promise.all([
       getProjects(),
-      getLeaderboardScores().catch(() => []),
+      getLeaderboardScores(),
       getProjectEvalCounts(),
     ]);
 
@@ -52,8 +52,8 @@ export default async function LeaderboardPage() {
       }))
       .sort((a, b) => b.totalScore - a.totalScore || a.projectName.localeCompare(b.projectName))
       .map((row, i) => ({ ...row, rank: i + 1 }));
-  } catch {
-    // Supabase not configured — show empty state
+  } catch (err) {
+    console.error("[Leaderboard] Failed to load scores:", err);
   }
 
   return <LeaderboardView initialRows={rows} scoredCount={rows.length} />;
