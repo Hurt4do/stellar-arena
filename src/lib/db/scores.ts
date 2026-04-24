@@ -71,10 +71,19 @@ export async function upsertScore(input: UpsertScoreInput): Promise<void> {
 }
 
 export async function upsertScores(inputs: UpsertScoreInput[]): Promise<void> {
-  const { error } = await supabase
+  if (inputs.length === 0) return;
+  const { data, error } = await supabase
     .from("scores")
-    .upsert(inputs, { onConflict: "project_id,judge_id,criterion_id" });
+    .upsert(inputs, { onConflict: "project_id,judge_id,criterion_id" })
+    .select("id");
   if (error) throw error;
+  // If data is empty the upsert was silently blocked (RLS enabled with no INSERT policy,
+  // or missing GRANT INSERT on the scores table for the anon role).
+  if (!data || data.length === 0) {
+    throw new Error(
+      "Scores could not be saved — check that RLS is disabled and the anon role has INSERT on the scores table."
+    );
+  }
 }
 
 export async function getJudgeProjectFeedback(judgeId: string, projectId: string): Promise<
