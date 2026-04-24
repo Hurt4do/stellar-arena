@@ -58,9 +58,12 @@ export async function GET() {
   });
 
   // Criterion ID → max_score mapping (only for IDs used in scores)
-  const usedCriterionIds = [...new Set((scores ?? []).map((s) => s.criterion_id))];
   const criterionMaxScores: Record<string, number | null> = {};
-  for (const id of usedCriterionIds) criterionMaxScores[id] = maxMap[id] ?? null;
+  for (const s of scores ?? []) {
+    if (!(s.criterion_id in criterionMaxScores)) {
+      criterionMaxScores[s.criterion_id] = maxMap[s.criterion_id] ?? null;
+    }
+  }
 
   return NextResponse.json({
     total_scores: scores?.length ?? 0,
