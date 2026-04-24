@@ -2,16 +2,17 @@ export const dynamic = "force-dynamic";
 
 import LeaderboardView from "@/features/leaderboard/LeaderboardView";
 import { getProjects } from "@/lib/db/projects";
-import { getLeaderboardScores } from "@/lib/db/scores";
+import { getLeaderboardScores, getProjectEvalCounts } from "@/lib/db/scores";
 import type { RankingRow } from "@/types/dashboard";
 
 export default async function LeaderboardPage() {
   let rows: RankingRow[] = [];
 
   try {
-    const [projects, leaderboardScores] = await Promise.all([
+    const [projects, leaderboardScores, evalCounts] = await Promise.all([
       getProjects(),
-      getLeaderboardScores(),
+      getLeaderboardScores().catch(() => []),
+      getProjectEvalCounts(),
     ]);
 
     const projectMap: Record<string, string> = {};
@@ -21,17 +22,28 @@ export default async function LeaderboardPage() {
       trackMap[p.id] = p.track ?? "Unknown";
     }
 
-    rows = leaderboardScores
-      .sort((a, b) => b.avg_score - a.avg_score)
-      .map((s, i) => ({
-        rank: i + 1,
-        projectId: s.project_id,
-        projectName: projectMap[s.project_id] ?? s.project_id,
-        metadataTags: [trackMap[s.project_id] ?? "Unknown", `${s.judge_count} judge${s.judge_count !== 1 ? "s" : ""}`],
-        efficiency: s.avg_score,
-        innovation: s.avg_score,
-        totalScore: s.avg_score,
-      }));
+    // Build avg score map from leaderboard (may be empty if scores table unreadable)
+    const avgMap: Record<string, number> = {};
+    for (const s of leaderboardScores) avgMap[s.project_id] = s.avg_score;
+
+    // Show all projects that have at least one evaluation (from project_feedback)
+    const evaluatedIds = Object.keys(evalCounts).filter((id) => evalCounts[id] > 0);
+
+    rows = evaluatedIds
+      .map((id) => ({
+        rank: 0,
+        projectId: id,
+        projectName: projectMap[id] ?? id,
+        metadataTags: [
+          trackMap[id] ?? "Unknown",
+          `${evalCounts[id]} eval${evalCounts[id] !== 1 ? "s" : ""}`,
+        ],
+        efficiency: avgMap[id] ?? 0,
+        innovation: avgMap[id] ?? 0,
+        totalScore: avgMap[id] ?? 0,
+      }))
+      .sort((a, b) => b.totalScore - a.totalScore || a.projectName.localeCompare(b.projectName))
+      .map((row, i) => ({ ...row, rank: i + 1 }));
   } catch {
     // Supabase not configured — show empty state
   }
