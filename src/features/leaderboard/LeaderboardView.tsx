@@ -34,6 +34,8 @@ export default function LeaderboardView({
       .map((row, i) => ({ ...row, rank: i + 1 }));
   }, [initialRows, effW, innovationW]);
 
+  const scoredRows = useMemo(() => rows.filter((r) => r.totalScore > 0), [rows]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-6">
@@ -73,8 +75,8 @@ export default function LeaderboardView({
               GLOBAL AVG
             </div>
             <div className="text-[20px] font-oxanium tracking-widest font-semibold text-black mt-1">
-              {rows.length > 0
-                ? (rows.reduce((a, b) => a + b.totalScore, 0) / rows.length).toFixed(1)
+              {scoredRows.length > 0
+                ? (scoredRows.reduce((a, b) => a + b.totalScore, 0) / scoredRows.length).toFixed(1)
                 : "—"}
             </div>
           </div>

@@ -30,10 +30,12 @@ export default async function LeaderboardPage() {
       judgeCountMap[s.project_id] = s.judge_count;
     }
 
-    // Only rank projects that have actual scored evaluations (avg_score from scores table).
-    // Projects with only project_feedback (no per-criterion scores) would show as 0 and
-    // corrupt the global average.
-    const evaluatedIds = Object.keys(avgMap);
+    // Union: projects with per-criterion scores OR with feedback-only evaluations.
+    // Scored projects get their avg_score; feedback-only get totalScore 0 and sort to bottom.
+    const allEvaluatedIds: Record<string, true> = {};
+    for (const id of Object.keys(evalCounts)) if (evalCounts[id] > 0) allEvaluatedIds[id] = true;
+    for (const id of Object.keys(avgMap)) allEvaluatedIds[id] = true;
+    const evaluatedIds = Object.keys(allEvaluatedIds);
 
     rows = evaluatedIds
       .map((id) => ({

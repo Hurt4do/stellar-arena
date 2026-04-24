@@ -24,7 +24,10 @@ export default async function MyScoringPage() {
       return (p.track ?? "").toLowerCase() === currentTrack;
     });
 
-  const scoredProjectIds = new Set(scores.map((s) => s.project_id));
+  // Mark evaluated if judge has scores OR feedback (many old evaluations only saved feedback)
+  const scoredProjectIds = new Set<string>();
+  for (const s of scores) scoredProjectIds.add(s.project_id);
+  for (const f of feedback) scoredProjectIds.add(f.project_id);
 
   const scoreMap: Record<string, DbScore[]> = {};
   for (const s of scores) {
