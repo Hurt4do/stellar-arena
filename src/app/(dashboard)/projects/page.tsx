@@ -1,9 +1,7 @@
-export const dynamic = "force-dynamic";
-
 import { cookies } from "next/headers";
 import ProjectsGridView from "@/features/projects/ProjectsGridView";
 import { getProjects, normalizeTrack } from "@/lib/db/projects";
-import { getLeaderboardScores } from "@/lib/db/scores";
+import { getProjectEvalCounts } from "@/lib/db/scores";
 import { COOKIE_TRACK } from "@/lib/auth";
 import type { Project } from "@/types/dashboard";
 
@@ -16,7 +14,7 @@ export default async function ProjectsPage() {
   let errorMessage: string | undefined;
 
   try {
-    const [data, leaderboardScores] = await Promise.all([getProjects(), getLeaderboardScores()]);
+    const [data, counts] = await Promise.all([getProjects(), getProjectEvalCounts()]);
     projects = data.map((p) => {
       const normalized = normalizeTrack(p.track) ?? p.track;
       return {
@@ -27,7 +25,7 @@ export default async function ProjectsPage() {
         tags: normalized ? [normalized] : [],
       };
     });
-    for (const s of leaderboardScores) evalCounts[s.project_id] = s.judge_count;
+    Object.assign(evalCounts, counts);
   } catch (err) {
     errorMessage = String(err);
   }

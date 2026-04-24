@@ -198,6 +198,26 @@ export async function getAllScoresForExport(
   return { criteria, rows };
 }
 
+/**
+ * Returns the number of unique judges who evaluated each project.
+ * Simpler than getLeaderboardScores — no rubric_criteria join needed.
+ */
+export async function getProjectEvalCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("scores")
+    .select("project_id, judge_id");
+  if (error) throw error;
+
+  const sets: Record<string, Set<string>> = {};
+  for (const s of data ?? []) {
+    if (!sets[s.project_id]) sets[s.project_id] = new Set();
+    sets[s.project_id].add(s.judge_id);
+  }
+  return Object.fromEntries(
+    Object.entries(sets).map(([pid, set]) => [pid, set.size])
+  );
+}
+
 // Returns { projectId -> averageScore (0-100) } across all judges
 export async function getLeaderboardScores(): Promise<
   { project_id: string; avg_score: number; judge_count: number }[]

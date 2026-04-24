@@ -3,7 +3,7 @@ import ProjectQueueCard from "@/components/dashboard/ProjectQueueCard";
 import StatCard from "@/components/dashboard/StatCard";
 import CountdownStatCard from "@/components/dashboard/CountdownStatCard";
 import { getProjects, normalizeTrack } from "@/lib/db/projects";
-import { getLeaderboardScores } from "@/lib/db/scores";
+import { getProjectEvalCounts } from "@/lib/db/scores";
 import type { QueueItem } from "@/types/dashboard";
 
 export default async function OverviewView({
@@ -15,13 +15,10 @@ export default async function OverviewView({
   let queue: QueueItem[] = [];
 
   try {
-    const [projects, leaderboardScores] = await Promise.all([
+    const [projects, evalCountMap] = await Promise.all([
       getProjects(),
-      getLeaderboardScores(),
+      getProjectEvalCounts(),
     ]);
-
-    const evalCountMap: Record<string, number> = {};
-    for (const s of leaderboardScores) evalCountMap[s.project_id] = s.judge_count;
 
     // Normalize tracks and filter by the judge's current track
     const filtered = projects
